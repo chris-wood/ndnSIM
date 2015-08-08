@@ -17,8 +17,8 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDN_PRODUCER_H
-#define NDN_PRODUCER_H
+#ifndef NDN_ACCOUNTINGPRODUCER_H
+#define NDN_ACCOUNTINGPRODUCER_H
 
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
@@ -40,12 +40,12 @@ namespace ndn {
  * size and name same as in Interest.cation, which replying every incoming Interest
  * with Data packet with a specified size and name same as in Interest.
  */
-class Producer : public App {
+class AccountingProducer : public App {
 public:
   static TypeId
   GetTypeId(void);
 
-  Producer();
+  AccountingProducer();
 
   // inherited from NdnApp
   virtual void
@@ -72,4 +72,4 @@ private:
 } // namespace ndn
 } // namespace ns3
 
-#endif // NDN_PRODUCER_H
+#endif // NDN_ACCOUNTINGPRODUCER_H
