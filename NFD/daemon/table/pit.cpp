@@ -108,11 +108,10 @@ void
 Pit::erase(shared_ptr<pit::Entry> pitEntry)
 {
   shared_ptr<name_tree::Entry> nameTreeEntry = m_nameTree.get(*pitEntry);
-  BOOST_ASSERT(static_cast<bool>(nameTreeEntry));
+  BOOST_ASSERT(static_cast<bool>(nameTreeEntry)); 
 
   nameTreeEntry->erasePitEntry(pitEntry);
   m_nameTree.eraseEntryIfEmpty(nameTreeEntry);
-
   --m_nItems;
 }
 

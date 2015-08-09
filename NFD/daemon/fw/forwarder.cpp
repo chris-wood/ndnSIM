@@ -96,6 +96,9 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     // FIB lookup
     shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
 
+    // Cancel the unsatisfy and straggler timers
+    this->cancelUnsatisfyAndStragglerTimer(pitEntry);
+
     // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
     pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
 
@@ -132,16 +135,17 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,
                                               pitEntry, cref(*m_csFace), cref(*csMatch)));
       // set PIT straggler timer
-      this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
+      // this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
 
       // Set the isPint flag
-      std::cout << "setting the isPint flag" << std::endl;
-      BOOST_ASSERT(0);
       const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
       const_cast<Interest*>(&interest)->setIsPint(1);
 
       // FIB lookup
       shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+      // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
+      pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
 
       // dispatch pint to strategy
       this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,

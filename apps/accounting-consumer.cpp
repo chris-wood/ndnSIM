@@ -85,7 +85,7 @@ AccountingConsumer::SendPacket()
 
   //
   shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
-  nameWithSequence->appendSequenceNumber(seq);
+  nameWithSequence->appendSequenceNumber(seq); // all the same
   //
 
   // shared_ptr<Interest> interest = make_shared<Interest> ();
@@ -95,6 +95,7 @@ AccountingConsumer::SendPacket()
   time::milliseconds interestLifeTime(m_interestLifeTime.GetMilliSeconds());
   interest->setInterestLifetime(interestLifeTime);
 
+  // Note: we're setting this randomly, just to test the encoding/decoding
   sentCount++;
   if (sentCount % 10 == 0) {
     interest->setIsPint(1); // make it a pint

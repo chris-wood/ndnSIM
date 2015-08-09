@@ -103,39 +103,40 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
     return;
 
   uint64_t isPint = interest->getIsPint();
-  if (isPint > 0) {
-    std::cout << "is Pint? " << isPint << std::endl;
+  if (isPint == 0) {
+
+    Name dataName(interest->getName());
+    // dataName.append(m_postfix);
+    // dataName.appendVersion();
+
+    auto data = make_shared<Data>();
+    data->setName(dataName);
+    data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
+
+    data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));
+
+    Signature signature;
+    SignatureInfo signatureInfo(static_cast< ::ndn::tlv::SignatureTypeValue>(255));
+
+    if (m_keyLocator.size() > 0) {
+      signatureInfo.setKeyLocator(m_keyLocator);
+    }
+
+    signature.setInfo(signatureInfo);
+    signature.setValue(::ndn::nonNegativeIntegerBlock(::ndn::tlv::SignatureValue, m_signature));
+
+    data->setSignature(signature);
+
+    NS_LOG_INFO("node(" << GetNode()->GetId() << ") responding with Data: " << data->getName());
+
+    // to create real wire encoding
+    data->wireEncode();
+
+    m_transmittedDatas(data, this, m_face);
+    m_face->onReceiveData(*data);
+  } else {
+    std::cout << "Producer received a pInt " << std::endl;
   }
-
-  Name dataName(interest->getName());
-  // dataName.append(m_postfix);
-  // dataName.appendVersion();
-
-  auto data = make_shared<Data>();
-  data->setName(dataName);
-  data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
-
-  data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));
-
-  Signature signature;
-  SignatureInfo signatureInfo(static_cast< ::ndn::tlv::SignatureTypeValue>(255));
-
-  if (m_keyLocator.size() > 0) {
-    signatureInfo.setKeyLocator(m_keyLocator);
-  }
-
-  signature.setInfo(signatureInfo);
-  signature.setValue(::ndn::nonNegativeIntegerBlock(::ndn::tlv::SignatureValue, m_signature));
-
-  data->setSignature(signature);
-
-  NS_LOG_INFO("node(" << GetNode()->GetId() << ") responding with Data: " << data->getName());
-
-  // to create real wire encoding
-  data->wireEncode();
-
-  m_transmittedDatas(data, this, m_face);
-  m_face->onReceiveData(*data);
 }
 
 } // namespace ndn
