@@ -51,6 +51,9 @@ protected:
   virtual void
   ScheduleNextPacket();
 
+  virtual void
+  SendPacket();
+
   /**
    * @brief Set type of frequency randomization
    * @param value Either 'none', 'uniform', or 'exponential'

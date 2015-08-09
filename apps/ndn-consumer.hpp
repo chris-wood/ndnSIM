@@ -73,7 +73,7 @@ public:
   /**
    * @brief Actually send packet
    */
-  void
+  virtual void
   SendPacket();
 
   /**

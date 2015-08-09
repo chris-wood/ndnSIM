@@ -102,6 +102,11 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
   if (!m_active)
     return;
 
+  uint64_t isPint = interest->getIsPint();
+  if (isPint > 0) {
+    std::cout << "is Pint? " << isPint << std::endl;
+  }
+
   Name dataName(interest->getName());
   // dataName.append(m_postfix);
   // dataName.appendVersion();

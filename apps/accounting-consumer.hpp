@@ -40,12 +40,12 @@ public:
   AccountingConsumer();
 
 protected:
-  /**
-   * \brief Constructs the Interest packet and sends it using a callback to the underlying NDN
-   * protocol
-   */
   virtual void
-  ScheduleNextPacket();
+  SendPacket();
+
+private: 
+  uint64_t sentCount;
+
 };
 
 } // namespace ndn

@@ -52,16 +52,65 @@ AccountingConsumer::GetTypeId(void)
   return tid;
 }
 
-AccountingConsumer::AccountingConsumer()
+AccountingConsumer::AccountingConsumer() : sentCount(0)
 {
   NS_LOG_FUNCTION_NOARGS();
 }
 
 void
-AccountingConsumer::ScheduleNextPacket()
+AccountingConsumer::SendPacket()
 {
-  std::cout << "do something, okay?" << std::endl;
+  if (!m_active)
+    return;
+
+  NS_LOG_FUNCTION_NOARGS();
+
+  uint32_t seq = std::numeric_limits<uint32_t>::max(); // invalid
+
+  while (m_retxSeqs.size()) {
+    seq = *m_retxSeqs.begin();
+    m_retxSeqs.erase(m_retxSeqs.begin());
+    break;
+  }
+
+  if (seq == std::numeric_limits<uint32_t>::max()) {
+    if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
+      if (m_seq >= m_seqMax) {
+        return; // we are totally done
+      }
+    }
+
+    seq = m_seq++;
+  }
+
+  //
+  shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
+  nameWithSequence->appendSequenceNumber(seq);
+  //
+
+  // shared_ptr<Interest> interest = make_shared<Interest> ();
+  shared_ptr<Interest> interest = make_shared<Interest>();
+  interest->setNonce(m_rand.GetValue());
+  interest->setName(*nameWithSequence);
+  time::milliseconds interestLifeTime(m_interestLifeTime.GetMilliSeconds());
+  interest->setInterestLifetime(interestLifeTime);
+
+  sentCount++;
+  if (sentCount % 10 == 0) {
+    interest->setIsPint(1); // make it a pint
+  }
+
+  // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
+  NS_LOG_INFO("> Interest for " << seq);
+
+  WillSendOutInterest(seq);
+
+  m_transmittedInterests(interest, this, m_face);
+  m_face->onReceiveInterest(*interest);
+
+  ScheduleNextPacket();
 }
+
   
 
 // no destructor... who cares

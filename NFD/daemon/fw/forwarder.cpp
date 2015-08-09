@@ -88,7 +88,7 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     return;
   }
 
-  if (interest.getIsPint() == 1) {
+  if (interest.getIsPint() > 0) {
     // Set the isPint flag
     const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
     const_cast<Interest*>(&interest)->setIsPint(1);
@@ -96,9 +96,12 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     // FIB lookup
     shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
 
-    // dispatch pint to strategy
+    // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
+    pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
+
     this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
                                             cref(inFace), cref(interest), fibEntry, pitEntry));
+    
     // After sending pInt out, remove it from PIT
     m_pit.erase(pitEntry);
     return;
@@ -132,6 +135,8 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
 
       // Set the isPint flag
+      std::cout << "setting the isPint flag" << std::endl;
+      BOOST_ASSERT(0);
       const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
       const_cast<Interest*>(&interest)->setIsPint(1);
 
@@ -220,6 +225,11 @@ Forwarder::onOutgoingInterest(shared_ptr<pit::Entry> pitEntry, Face& outFace,
   const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
   pit::InRecordCollection::const_iterator pickedInRecord = std::max_element(
     inRecords.begin(), inRecords.end(), bind(&compare_pickInterest, _1, _2, &outFace));
+
+  if (pickedInRecord != inRecords.end()) {
+   // TODO? 
+  }
+
   BOOST_ASSERT(pickedInRecord != inRecords.end());
   shared_ptr<Interest> interest = const_pointer_cast<Interest>(
     pickedInRecord->getInterest().shared_from_this());
