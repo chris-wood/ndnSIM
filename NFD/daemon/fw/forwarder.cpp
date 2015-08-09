@@ -88,6 +88,22 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     return;
   }
 
+  if (interest.getIsPint() == 1) {
+    // Set the isPint flag
+    const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
+    const_cast<Interest*>(&interest)->setIsPint(1);
+
+    // FIB lookup
+    shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+    // dispatch pint to strategy
+    this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+                                            cref(inFace), cref(interest), fibEntry, pitEntry));
+    // After sending pInt out, remove it from PIT
+    m_pit.erase(pitEntry);
+    return;
+  }
+
   // cancel unsatisfy & straggler timer
   this->cancelUnsatisfyAndStragglerTimer(pitEntry);
 
@@ -114,6 +130,17 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
                                               pitEntry, cref(*m_csFace), cref(*csMatch)));
       // set PIT straggler timer
       this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
+
+      // Set the isPint flag
+      const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
+      const_cast<Interest*>(&interest)->setIsPint(1);
+
+      // FIB lookup
+      shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+      // dispatch pint to strategy
+      this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+                                              cref(inFace), cref(interest), fibEntry, pitEntry));
 
       // goto outgoing Data pipeline
       this->onOutgoingData(*csMatch, inFace);
