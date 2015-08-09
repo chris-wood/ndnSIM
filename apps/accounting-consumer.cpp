@@ -99,6 +99,14 @@ AccountingConsumer::SendPacket()
   sentCount++;
   if (sentCount % 10 == 0) {
     interest->setIsPint(1); // make it a pint
+    std::vector<uint64_t> payload;
+
+    payload.push_back(seq);
+    payload.push_back(seq);
+    payload.push_back(seq);
+    payload.push_back(seq);
+    
+    interest->setPayload(payload);
   }
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);

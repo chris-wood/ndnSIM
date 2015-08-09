@@ -135,7 +135,9 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
     m_transmittedDatas(data, this, m_face);
     m_face->onReceiveData(*data);
   } else {
-    std::cout << "Producer received a pInt " << std::endl;
+    std::cout << "Producer received a pInt with payload" << std::endl;
+    std::vector<uint64_t> payload = interest->getPayload();
+    std::cout << "\t" << payload.at(0) << "," << payload.at(1) << "," << payload.at(2) << "," << payload.at(3) << std::endl;
   }
 }
 
