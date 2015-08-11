@@ -149,6 +149,10 @@ public:
   Ptr<FaceContainer>
   Install(Ptr<Node> node) const;
 
+  Ptr<FaceContainer>
+  InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback) const;
+
+
   /**
    * \brief Install Ndn stack on each node in the input container
    *

@@ -176,6 +176,19 @@ StackHelper::Install(Ptr<Node> node) const
   return faces;
 }
 
+Ptr<FaceContainer>
+StackHelper::InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback) const
+{
+  Ptr<FaceContainer> faces = Install(node);
+
+  // Set the ForwardingDelay callback
+  Ptr<L3Protocol> l3Protocol = node->GetObject<L3Protocol>();
+  nfd::Forwarder& forwarder = *l3Protocol->getForwarder();
+  forwarder.setForwardingDelayCallback(forwardingDelayCallback);
+
+  return faces;
+}
+
 void
 StackHelper::AddNetDeviceFaceCreateCallback(TypeId netDeviceType,
                                             StackHelper::NetDeviceFaceCreateCallback callback)
