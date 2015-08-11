@@ -38,6 +38,11 @@
 #include "table/dead-nonce-list.hpp"
 
 #include "ns3/ndnSIM/model/cs/ndn-content-store.hpp"
+#include "ns3/nstime.h"
+
+#include <chrono>
+
+typedef void (*ForwardingDelayCallback)(ns3::Time, float);
 
 namespace nfd {
 
@@ -61,6 +66,9 @@ public:
 
   const ForwarderCounters&
   getCounters() const;
+
+  void
+  setForwardingDelayCallback(size_t forwardingDelayCallback);
 
 public: // faces
   FaceTable&
@@ -225,6 +233,8 @@ private:
 
   // allow Strategy (base class) to enter pipelines
   friend class fw::Strategy;
+
+  ForwardingDelayCallback m_forwardingDelayCallback;
 };
 
 inline const ForwarderCounters&
@@ -309,6 +319,12 @@ inline void
 Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs)
 {
   m_csFromNdnSim = cs;
+}
+
+inline void
+Forwarder::setForwardingDelayCallback(size_t forwardingDelayCallback)
+{
+  m_forwardingDelayCallback = reinterpret_cast<ForwardingDelayCallback>(forwardingDelayCallback);
 }
 
 #ifdef WITH_TESTS

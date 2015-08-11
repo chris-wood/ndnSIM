@@ -77,6 +77,10 @@ public:
 
   template<class Strategy>
   static void
+  InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback);
+
+  template<class Strategy>
+  static void
   InstallAll(const Name& namePrefix);
 
 private:
@@ -100,6 +104,25 @@ StrategyChoiceHelper::Install(Ptr<Node> node, const Name& namePrefix)
   }
 
   Install(node, namePrefix, Strategy::STRATEGY_NAME);
+}
+
+template<class Strategy>
+inline void
+StrategyChoiceHelper::InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback)
+{
+  Ptr<L3Protocol> l3Protocol = node->GetObject<L3Protocol>();
+  NS_ASSERT(l3Protocol != nullptr);
+  NS_ASSERT(l3Protocol->getForwarder() != nullptr);
+
+  nfd::Forwarder& forwarder = *l3Protocol->getForwarder();
+  forwarder.setForwardingDelayCallback(forwardingDelayCallback);
+  nfd::StrategyChoice& strategyChoice = forwarder.getStrategyChoice();
+
+  if (!strategyChoice.hasStrategy(Strategy::STRATEGY_NAME)) {
+    strategyChoice.install(make_shared<Strategy>(ref(forwarder)));
+  }
+
+  InstallWithCallback(node, namePrefix, Strategy::STRATEGY_NAME);
 }
 
 template<class Strategy>
