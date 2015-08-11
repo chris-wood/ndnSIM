@@ -65,6 +65,9 @@ public:
   Install(Ptr<Node> node, const Name& namePrefix, const Name& strategy);
 
   static void
+  InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback);
+
+  static void
   InstallAll(const Name& namePrefix, const Name& strategy);
 
   template<class Strategy>
@@ -122,7 +125,7 @@ StrategyChoiceHelper::InstallWithCallback(Ptr<Node> node, const Name& namePrefix
     strategyChoice.install(make_shared<Strategy>(ref(forwarder)));
   }
 
-  InstallWithCallback(node, namePrefix, Strategy::STRATEGY_NAME);
+  Install(node, namePrefix, Strategy::STRATEGY_NAME);
 }
 
 template<class Strategy>
