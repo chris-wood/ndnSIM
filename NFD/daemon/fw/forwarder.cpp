@@ -59,6 +59,10 @@ Forwarder::~Forwarder()
 void
 Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
 {
+  // If the router doesn't implement pInts and one is received, drop it.
+  if (m_usePint = false && interest.getIsPint() > 0)
+    return;
+
   auto start = std::chrono::high_resolution_clock::now();
 
   // receive Interest
@@ -139,23 +143,27 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       // set PIT straggler timer
       // this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
 
-      // Set the isPint flag
-      const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
-      const_cast<Interest*>(&interest)->setIsPint(1);
+      if (m_usePint) {
+        // Set the isPint flag
+        const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
+        const_cast<Interest*>(&interest)->setIsPint(1);
 
-      // FIB lookup
-      shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+        // FIB lookup
+        shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
 
-      // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
-      pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
+        // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
+        pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
 
-      // dispatch pint to strategy
-      this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
-                                              cref(inFace), cref(interest), fibEntry, pitEntry));
+        // dispatch pint to strategy
+        this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+                                                cref(inFace), cref(interest), fibEntry, pitEntry));
+      }
 
       // goto outgoing Data pipeline
       this->onOutgoingData(*csMatch, inFace);
 
+      // This measures the time from receiving the interest until serving it from the
+      // cache. We only measure the execution time in cases of cache hits.
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> duration = end - start;
       if (m_forwardingDelayCallback != 0)
