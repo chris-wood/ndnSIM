@@ -38,13 +38,50 @@ public:
 
   // constructor
   AccountingConsumer();
+  ~AccountingConsumer();
 
 protected:
+
   virtual void
   SendPacket();
 
-private: 
+  virtual void
+  OnData(shared_ptr<const Data> data);
+
+  uint32_t
+  GetNextSeq();
+
+  virtual void
+  ScheduleNextPacket();
+
+private:
+  void
+  SetNumberOfContents(uint32_t numOfContents);
+
+  uint32_t
+  GetNumberOfContents() const;
+
+  void
+  SetQ(double q);
+
+  double
+  GetQ() const;
+
+  void
+  SetS(double s);
+
+  double
+  GetS() const;
+
+private:
+  uint32_t m_N;               // number of the contents
+  double m_q;                 // q in (k+q)^s
+  double m_s;                 // s in (k+q)^s
+  std::vector<double> m_Pcum; // cumulative probability
   uint64_t sentCount;
+  uint64_t receiveCount;
+
+  UniformVariable m_SeqRng; // RNG
 
 };
 

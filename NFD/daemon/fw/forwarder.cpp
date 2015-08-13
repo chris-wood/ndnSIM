@@ -47,6 +47,7 @@ Forwarder::Forwarder()
   , m_strategyChoice(m_nameTree, fw::makeDefaultStrategy(*this))
   , m_csFace(make_shared<NullFace>(FaceUri("contentstore://")))
 {
+  m_forwardingDelayCallback = 0; // ensure it's not initialized to start.
   fw::installStrategies(*this);
   getFaceTable().addReserved(m_csFace, FACEID_CONTENT_STORE);
 }
@@ -158,8 +159,11 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
 
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> duration = end - start;
-      if (m_forwardingDelayCallback != 0)
+
+      if (m_forwardingDelayCallback != 0) {
         m_forwardingDelayCallback(ns3::Simulator::Now(), duration.count());
+      }
+
       return;
     }
   }

@@ -54,6 +54,9 @@ protected:
   virtual void
   SendPacket();
 
+  virtual void
+  OnData(shared_ptr<const Data> data);
+
   /**
    * @brief Set type of frequency randomization
    * @param value Either 'none', 'uniform', or 'exponential'

@@ -163,6 +163,12 @@ ConsumerCbr::SendPacket()
   ScheduleNextPacket();
 }
 
+void
+ConsumerCbr::OnData(shared_ptr<const Data> data)
+{
+  Consumer::OnData(data);
+}
+
 std::string
 ConsumerCbr::GetRandomize() const
 {
