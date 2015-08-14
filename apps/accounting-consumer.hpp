@@ -55,6 +55,12 @@ protected:
   ScheduleNextPacket();
 
 private:
+  void 
+  SetConsumerID(uint32_t id);
+
+  uint32_t
+  GetConsumerID() const;
+
   void
   SetNumberOfContents(uint32_t numOfContents);
 
@@ -74,6 +80,7 @@ private:
   GetS() const;
 
 private:
+  uint32_t m_id;
   uint32_t m_N;               // number of the contents
   double m_q;                 // q in (k+q)^s
   double m_s;                 // s in (k+q)^s

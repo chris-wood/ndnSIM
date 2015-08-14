@@ -26,7 +26,7 @@ using namespace std::chrono;
 
 #define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr80-PINT"
 #define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr80-PINT"
-#define SIMULATION_DURATION 1000.0
+#define SIMULATION_DURATION 3000.0 // real-time?
 
 namespace ns3 {
   ofstream delayFile;
@@ -56,145 +56,151 @@ namespace ns3 {
     nodes.Create(NUM_OF_CONSUMERS + NUM_OF_ROUTERS + NUM_OF_PRODUCER);
 
     // Connecting nodes using two links
-    // Connecting nodes using two links
     PointToPointHelper p2p;
+
     // Connecting consumers to edge routers
     int g = 0;
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
+    for (int i = 0; i < GROUP_SIZE; i++, g++) {
       p2p.Install (nodes.Get (g), nodes.Get (0 + NUM_OF_CONSUMERS));      // C0 <--> R0
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (1 + NUM_OF_CONSUMERS));      // C1 <--> R1
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (3 + NUM_OF_CONSUMERS));      // C2 <--> R3
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (5 + NUM_OF_CONSUMERS));      // C3 <--> R5
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (6 + NUM_OF_CONSUMERS));      // C4 <--> R6
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (10 + NUM_OF_CONSUMERS));     // C5 <--> R10
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (8 + NUM_OF_CONSUMERS));      // C6 <--> R8
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (11 + NUM_OF_CONSUMERS));     // C7 <--> R11
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (12 + NUM_OF_CONSUMERS));     // C8 <--> R12
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (18 + NUM_OF_CONSUMERS));     // C9 <--> R18
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (17 + NUM_OF_CONSUMERS));    // C10 <--> R17
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (20 + NUM_OF_CONSUMERS));    // C11 <--> R20
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (24 + NUM_OF_CONSUMERS));    // C12 <--> R24
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (29 + NUM_OF_CONSUMERS));    // C13 <--> R2
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (28 + NUM_OF_CONSUMERS));    // C14 <--> R28
-    for (int i = 0; i < GROUP_SIZE; i++, g++)
-      p2p.Install (nodes.Get (g), nodes.Get (21 + NUM_OF_CONSUMERS));    // C15 <--> R21
+    }
 
-    // Connect routers
-    p2p.Install (nodes.Get (0 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R0 <--> R9
-    p2p.Install (nodes.Get (1 + NUM_OF_CONSUMERS), nodes.Get (15 + NUM_OF_CONSUMERS));     // R1 <--> R15
-    p2p.Install (nodes.Get (2 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R2 <--> R9
-    p2p.Install (nodes.Get (3 + NUM_OF_CONSUMERS), nodes.Get (4 + NUM_OF_CONSUMERS));      // R3 <--> R4
-    p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (7 + NUM_OF_CONSUMERS));      // R4 <--> R7
-    p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));     // R4 <--> R14
-    p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R4 <--> R9
-    p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (16 + NUM_OF_CONSUMERS));     // R4 <--> R16
-    p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));     // R4 <--> R25
-    p2p.Install (nodes.Get (5 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));     // R5 <--> R13
-    p2p.Install (nodes.Get (6 + NUM_OF_CONSUMERS), nodes.Get (7 + NUM_OF_CONSUMERS));      // R6 <--> R7
-    p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R7 <--> R9
-    p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));     // R7 <--> R14
-    p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));     // R7 <--> R22
-    p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));     // R7 <--> R23
-    p2p.Install (nodes.Get (8 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R8 <--> R9
-    p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));     // R9 <--> R13
-    p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));     // R9 <--> R14
-    p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));     // R9 <--> R22
-    p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));     // R9 <--> R25
-    p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));     // R9 <--> R27
-    p2p.Install (nodes.Get (10 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));    // R10 <--> R14
-    p2p.Install (nodes.Get (11 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));    // R11 <--> R13
-    p2p.Install (nodes.Get (12 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));    // R12 <--> R13
-    p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));    // R13 <--> R14
-    p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R13 <--> R22
-    p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R13 <--> R25
-    p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R13 <--> R27
-    p2p.Install (nodes.Get (14 + NUM_OF_CONSUMERS), nodes.Get (15 + NUM_OF_CONSUMERS));    // R14 <--> R15
-    p2p.Install (nodes.Get (14 + NUM_OF_CONSUMERS), nodes.Get (18 + NUM_OF_CONSUMERS));    // R14 <--> R18
-    p2p.Install (nodes.Get (14 + NUM_OF_CONSUMERS), nodes.Get (19 + NUM_OF_CONSUMERS));    // R14 <--> R19
-    p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (16 + NUM_OF_CONSUMERS));    // R15 <--> R16
-    p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (19 + NUM_OF_CONSUMERS));    // R15 <--> R19
-    p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (21 + NUM_OF_CONSUMERS));    // R15 <--> R21
-    p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R15 <--> R22
-    p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R15 <--> R23
-    p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R15 <--> R25
-    p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R15 <--> R27
-    p2p.Install (nodes.Get (16 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R16 <--> R23
-    p2p.Install (nodes.Get (16 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R16 <--> R27
-    p2p.Install (nodes.Get (17 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R17 <--> R23
-    // 18 done
-    p2p.Install (nodes.Get (19 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R19 <--> R22
-    p2p.Install (nodes.Get (20 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R20 <--> R25
-    p2p.Install (nodes.Get (21 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R21 <--> R22
-    p2p.Install (nodes.Get (21 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R21 <--> R27
-    p2p.Install (nodes.Get (22 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R22 <--> R23
-    p2p.Install (nodes.Get (22 + NUM_OF_CONSUMERS), nodes.Get (28 + NUM_OF_CONSUMERS));    // R22 <--> R28
-    p2p.Install (nodes.Get (22 + NUM_OF_CONSUMERS), nodes.Get (29 + NUM_OF_CONSUMERS));    // R22 <--> R29
-    p2p.Install (nodes.Get (23 + NUM_OF_CONSUMERS), nodes.Get (24 + NUM_OF_CONSUMERS));    // R23 <--> R24
-    p2p.Install (nodes.Get (23 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R23 <--> R25
-    p2p.Install (nodes.Get (23 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R23 <--> R27
-    // 24 done
-    // 25 done
-    p2p.Install (nodes.Get (26 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R26 <--> R27
-    // 27 done
-    // 28 done
-    // 29 done
+    for (int i = 0; i < GROUP_SIZE - 1; i++, g++) {
+      p2p.Install (nodes.Get (g), nodes.Get (1 + NUM_OF_CONSUMERS));      // C1 <--> R1
+    }
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (3 + NUM_OF_CONSUMERS));      // C2 <--> R3
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (5 + NUM_OF_CONSUMERS));      // C3 <--> R5
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (6 + NUM_OF_CONSUMERS));      // C4 <--> R6
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (10 + NUM_OF_CONSUMERS));     // C5 <--> R10
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (8 + NUM_OF_CONSUMERS));      // C6 <--> R8
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (11 + NUM_OF_CONSUMERS));     // C7 <--> R11
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (12 + NUM_OF_CONSUMERS));     // C8 <--> R12
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (18 + NUM_OF_CONSUMERS));     // C9 <--> R18
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (17 + NUM_OF_CONSUMERS));    // C10 <--> R17
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (20 + NUM_OF_CONSUMERS));    // C11 <--> R20
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (24 + NUM_OF_CONSUMERS));    // C12 <--> R24
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (2 + NUM_OF_CONSUMERS));    // C13 <--> R2
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (28 + NUM_OF_CONSUMERS));    // C14 <--> R28
+    // for (int i = 0; i < GROUP_SIZE; i++, g++)
+    //   p2p.Install (nodes.Get (g), nodes.Get (21 + NUM_OF_CONSUMERS));    // C15 <--> R21
+
+    // // Connect routers
+    // p2p.Install (nodes.Get (0 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R0 <--> R9
+    // p2p.Install (nodes.Get (1 + NUM_OF_CONSUMERS), nodes.Get (15 + NUM_OF_CONSUMERS));     // R1 <--> R15
+    // p2p.Install (nodes.Get (2 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R2 <--> R9
+    // p2p.Install (nodes.Get (3 + NUM_OF_CONSUMERS), nodes.Get (4 + NUM_OF_CONSUMERS));      // R3 <--> R4
+    // p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (7 + NUM_OF_CONSUMERS));      // R4 <--> R7
+    // p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));     // R4 <--> R14
+    // p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R4 <--> R9
+    // p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (16 + NUM_OF_CONSUMERS));     // R4 <--> R16
+    // p2p.Install (nodes.Get (4 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));     // R4 <--> R25
+    // p2p.Install (nodes.Get (5 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));     // R5 <--> R13
+    // p2p.Install (nodes.Get (6 + NUM_OF_CONSUMERS), nodes.Get (7 + NUM_OF_CONSUMERS));      // R6 <--> R7
+    // p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R7 <--> R9
+    // p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));     // R7 <--> R14
+    // p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));     // R7 <--> R22
+    // p2p.Install (nodes.Get (7 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));     // R7 <--> R23
+    // p2p.Install (nodes.Get (8 + NUM_OF_CONSUMERS), nodes.Get (9 + NUM_OF_CONSUMERS));      // R8 <--> R9
+    // p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));     // R9 <--> R13
+    // p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));     // R9 <--> R14
+    // p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));     // R9 <--> R22
+    // p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));     // R9 <--> R25
+    // p2p.Install (nodes.Get (9 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));     // R9 <--> R27
+    // p2p.Install (nodes.Get (10 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));    // R10 <--> R14
+    // p2p.Install (nodes.Get (11 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));    // R11 <--> R13
+    // p2p.Install (nodes.Get (12 + NUM_OF_CONSUMERS), nodes.Get (13 + NUM_OF_CONSUMERS));    // R12 <--> R13
+    // p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (14 + NUM_OF_CONSUMERS));    // R13 <--> R14
+    // p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R13 <--> R22
+    // p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R13 <--> R25
+    // p2p.Install (nodes.Get (13 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R13 <--> R27
+    // p2p.Install (nodes.Get (14 + NUM_OF_CONSUMERS), nodes.Get (15 + NUM_OF_CONSUMERS));    // R14 <--> R15
+    // p2p.Install (nodes.Get (14 + NUM_OF_CONSUMERS), nodes.Get (18 + NUM_OF_CONSUMERS));    // R14 <--> R18
+    // p2p.Install (nodes.Get (14 + NUM_OF_CONSUMERS), nodes.Get (19 + NUM_OF_CONSUMERS));    // R14 <--> R19
+    // p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (16 + NUM_OF_CONSUMERS));    // R15 <--> R16
+    // p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (19 + NUM_OF_CONSUMERS));    // R15 <--> R19
+    // p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (21 + NUM_OF_CONSUMERS));    // R15 <--> R21
+    // p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R15 <--> R22
+    // p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R15 <--> R23
+    // p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R15 <--> R25
+    // p2p.Install (nodes.Get (15 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R15 <--> R27
+    // p2p.Install (nodes.Get (16 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R16 <--> R23
+    // p2p.Install (nodes.Get (16 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R16 <--> R27
+    // p2p.Install (nodes.Get (17 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R17 <--> R23
+    // // 18 done
+    // p2p.Install (nodes.Get (19 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R19 <--> R22
+    // p2p.Install (nodes.Get (20 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R20 <--> R25
+    // p2p.Install (nodes.Get (21 + NUM_OF_CONSUMERS), nodes.Get (22 + NUM_OF_CONSUMERS));    // R21 <--> R22
+    // p2p.Install (nodes.Get (21 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R21 <--> R27
+    // p2p.Install (nodes.Get (22 + NUM_OF_CONSUMERS), nodes.Get (23 + NUM_OF_CONSUMERS));    // R22 <--> R23
+    // p2p.Install (nodes.Get (22 + NUM_OF_CONSUMERS), nodes.Get (28 + NUM_OF_CONSUMERS));    // R22 <--> R28
+    // p2p.Install (nodes.Get (22 + NUM_OF_CONSUMERS), nodes.Get (29 + NUM_OF_CONSUMERS));    // R22 <--> R29
+    // p2p.Install (nodes.Get (23 + NUM_OF_CONSUMERS), nodes.Get (24 + NUM_OF_CONSUMERS));    // R23 <--> R24
+    // p2p.Install (nodes.Get (23 + NUM_OF_CONSUMERS), nodes.Get (25 + NUM_OF_CONSUMERS));    // R23 <--> R25
+    // p2p.Install (nodes.Get (23 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R23 <--> R27
+    // // 24 done
+    // // 25 done
+    // p2p.Install (nodes.Get (26 + NUM_OF_CONSUMERS), nodes.Get (27 + NUM_OF_CONSUMERS));    // R26 <--> R27
+    // // 27 done
+    // // 28 done
+    // // 29 done
 
     // Connecting producer(s)
     int producerId = 0 + NUM_OF_CONSUMERS + NUM_OF_ROUTERS;
-    p2p.Install (nodes.Get (producerId), nodes.Get (0 + NUM_OF_CONSUMERS));      // P0 <--> R0
+    p2p.Install(nodes.Get (producerId), nodes.Get (0 + NUM_OF_CONSUMERS)); // R0 <--> P0
 
-
-    // Install NDN stack without cache
+    // Install NDN stack without cache on consumers
     ndn::StackHelper ndnHelperNoCache;
     ndnHelperNoCache.SetDefaultRoutes(true);
     ndnHelperNoCache.SetOldContentStore("ns3::ndn::cs::Nocache"); // no cache
-    // Install on consumers
+    
+    // Install on consumers and producer
     for (int i = 0; i < NUM_OF_CONSUMERS; i++) {
       ndnHelperNoCache.Install(nodes.Get(i));
     }
-    // Install on producer(s)
     ndnHelperNoCache.Install(nodes.Get(0 + NUM_OF_CONSUMERS + NUM_OF_ROUTERS));
-
 
     // Install NDN stack with cache
     ndn::StackHelper ndnHelperWithCache;
     ndnHelperWithCache.SetDefaultRoutes(true);
-    ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "0");
+    ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "0"); // no max size
+    
     // Install on routers
     for (int i = NUM_OF_CONSUMERS; i < NUM_OF_CONSUMERS + NUM_OF_ROUTERS; i++) {
       ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, USE_PINT);
     }
 
     // Consumers
-    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
     // Consumer will request /prefix/A/0, /prefix/A/1, ...
-    consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
-    consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
-    consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
     for(int i=0; i < NUM_OF_CONSUMERS; i++) {
-      consumerHelperHonest.SetPrefix("/prefix/A/" + std::to_string(i));
+      ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
+      consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
+      consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
+      consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
+      consumerHelperHonest.SetAttribute("MaxSeq", IntegerValue(10));
+      consumerHelperHonest.SetPrefix("/prefix/A/"); // + std::to_string(i));
+      consumerHelperHonest.SetAttribute("ConsumerID", IntegerValue(i));
+
       ApplicationContainer consumer = consumerHelperHonest.Install(nodes.Get(i));
+
       consumer.Start(Seconds(0));
     }
 
     // Producer
+    // Producer will reply to all requests starting with /prefix/A
     ndn::AppHelper producerHelper("ns3::ndn::AccountingProducer");
-    // Producer will reply to all requests starting with /prefix/A. For /prefix/B we expect NACK
-    producerHelper.SetPrefix("/prefix/A");
+    producerHelper.SetPrefix("/prefix/A/");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
     producerHelper.Install(nodes.Get(producerId));
 
@@ -214,6 +220,7 @@ namespace ns3 {
 
 int
 main(int argc, char* argv[])
-{
+{ 
+  //LogComponentEnable ("nfd.Forwarder", ns3::LOG_LEVEL_DEBUG);
   return ns3::run(argc, argv);
 }

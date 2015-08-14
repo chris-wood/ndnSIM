@@ -47,7 +47,9 @@ AccountingConsumer::GetTypeId(void)
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
       .AddConstructor<AccountingConsumer>()
-
+      .AddAttribute("ConsumerID", "Consumer ID", 
+                    IntegerValue(std::numeric_limits<uint32_t>::max()),
+                    MakeIntegerAccessor(&AccountingConsumer::m_id), MakeIntegerChecker<uint32_t>())
       .AddAttribute("NumberOfContents", "Number of the Contents in total", StringValue("100"),
                     MakeUintegerAccessor(&AccountingConsumer::SetNumberOfContents,
                                          &AccountingConsumer::GetNumberOfContents),
@@ -77,6 +79,18 @@ AccountingConsumer::AccountingConsumer()
 
 AccountingConsumer::~AccountingConsumer()
 {
+}
+
+void 
+AccountingConsumer::SetConsumerID(uint32_t id)
+{
+  m_id = id;
+}
+
+uint32_t
+AccountingConsumer::GetConsumerID() const
+{
+  return m_id;
 }
 
 void
@@ -136,6 +150,7 @@ AccountingConsumer::OnData(shared_ptr<const Data> contentObject)
 {
   Consumer::OnData(contentObject); // default receive logic
   receiveCount++;
+  std::cout << m_id << ": got data back with name " << contentObject->getName() << std::endl;
 }
 
 void
@@ -148,21 +163,9 @@ AccountingConsumer::SendPacket()
 
   uint32_t seq = std::numeric_limits<uint32_t>::max(); // invalid
 
-  // std::cout << Simulator::Now ().ToDouble (Time::S) << "s max -> " << m_seqMax << "\n";
-
   while (m_retxSeqs.size()) {
     seq = *m_retxSeqs.begin();
     m_retxSeqs.erase(m_retxSeqs.begin());
-
-    // NS_ASSERT (m_seqLifetimes.find (seq) != m_seqLifetimes.end ());
-    // if (m_seqLifetimes.find (seq)->time <= Simulator::Now ())
-    //   {
-
-    //     NS_LOG_DEBUG ("Expire " << seq);
-    //     m_seqLifetimes.erase (seq); // lifetime expired. Trying to find another unexpired
-    //     sequence number
-    //     continue;
-    //   }
     NS_LOG_DEBUG("=interest seq " << seq << " from m_retxSeqs");
     break;
   }
@@ -171,20 +174,16 @@ AccountingConsumer::SendPacket()
   {
     if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
       if (m_seq >= m_seqMax) {
-        return; // we are totally done
+        return; // done
       }
     }
 
-    seq = AccountingConsumer::GetNextSeq();
-    m_seq++;
+    // seq = AccountingConsumer::GetNextSeq();
+    seq = m_seq++;
   }
 
-  // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << seq << "\n";
-
-  //
   shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
   nameWithSequence->appendSequenceNumber(seq);
-  //
 
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand.GetValue());
@@ -199,6 +198,7 @@ AccountingConsumer::SendPacket()
   interest->setPayload(payload);
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
+  // std::cout << "> " << m_id << ": Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId() << std::endl;
   NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());
   NS_LOG_DEBUG("Trying to add " << seq << " with " << Simulator::Now() << ". already "
                                 << m_seqTimeouts.size() << " items");

@@ -105,6 +105,8 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
   receivedInterests++;
   uint64_t isPint = interest->getIsPint();
 
+  std::cout << "> Producer received " << interest->getName() << std::endl;
+  
   if (isPint == 0) {
 
     Name dataName(interest->getName());
@@ -129,7 +131,7 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
 
     data->setSignature(signature);
 
-    NS_LOG_INFO("node(" << GetNode()->GetId() << ") responding with Data: " << data->getName());
+    std::cout << "node(" << GetNode()->GetId() << ") responding with Data: " << data->getName() << std::endl;
 
     // to create real wire encoding
     data->wireEncode();
@@ -138,6 +140,7 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
     m_face->onReceiveData(*data);
   } else {
 
+    std::cout << "received pint " << interest->getName() << std::endl;
     receivedPints++;
     std::vector<uint64_t> payload = interest->getPayload();
 

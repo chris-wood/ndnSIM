@@ -61,7 +61,7 @@ void
 Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
 {
   // If the router doesn't implement pInts and one is received, drop it.
-  if (m_usePint = false && interest.getIsPint() > 0)
+  if (m_usePint == false && interest.getIsPint() > 0)
     return;
 
   auto start = std::chrono::high_resolution_clock::now();
@@ -79,115 +79,106 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     NFD_LOG_DEBUG("onIncomingInterest face=" << inFace.getId() <<
                   " interest=" << interest.getName() << " violates /localhost");
     // (drop)
+    // std::cout << "drop" << std::endl;
     return;
   }
 
-  // PIT insert
-  shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
+  if (interest.getIsPint() > 0) { // pInt is already set... forward, no PIT state, done.
+    // FIB lookup 
+    shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(interest.getName());
 
-  // detect duplicate Nonce
-  int dnw = pitEntry->findNonce(interest.getNonce(), inFace);
-  bool hasDuplicateNonce = (dnw != pit::DUPLICATE_NONCE_NONE) ||
-                           m_deadNonceList.has(interest.getName(), interest.getNonce());
-  if (hasDuplicateNonce) {
-    // goto Interest loop pipeline
-    this->onInterestLoop(inFace, interest, pitEntry);
+    const fib::NextHopList& nexthops = fibEntry->getNextHops();
+    fib::NextHopList::const_iterator it = nexthops.begin(); // pick the first outgoing face
+    shared_ptr<Face> outFace = it->getFace();
+
+    outFace->sendInterest(interest);
+    ++m_counters.getNOutInterests();
+
     return;
-  }
 
-  if (interest.getIsPint() > 0) {
-    // Set the isPint flag
-    const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
-    const_cast<Interest*>(&interest)->setIsPint(1);
+  } else {
+    shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
+
+    // detect duplicate Nonce
+    int dnw = pitEntry->findNonce(interest.getNonce(), inFace);
+    bool hasDuplicateNonce = (dnw != pit::DUPLICATE_NONCE_NONE) ||
+                             m_deadNonceList.has(interest.getName(), interest.getNonce());
+    if (hasDuplicateNonce) {
+      // goto Interest loop pipeline
+      this->onInterestLoop(inFace, interest, pitEntry);
+      return;
+    }
+    // cancel unsatisfy & straggler timer
+    this->cancelUnsatisfyAndStragglerTimer(pitEntry);
+
+    // is pending?
+    const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
+    bool isPending = inRecords.begin() != inRecords.end();
+    if (!isPending) {
+      // CS lookup
+      const Data* csMatch;
+      shared_ptr<Data> match;
+      if (m_csFromNdnSim == nullptr)
+        csMatch = m_cs.find(interest);
+      else {
+        match = m_csFromNdnSim->Lookup(interest.shared_from_this());
+        csMatch = match.get();
+      }
+      if (csMatch != 0) {
+        const_cast<Data*>(csMatch)->setIncomingFaceId(FACEID_CONTENT_STORE);
+        // XXX should we lookup PIT for other Interests that also match csMatch?
+
+        // invoke PIT satisfy callback
+        beforeSatisfyInterest(*pitEntry, *m_csFace, *csMatch);
+        this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,
+                                                pitEntry, cref(*m_csFace), cref(*csMatch)));
+
+        if (m_usePint) {
+          // Set the isPint flag
+          const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
+          const_cast<Interest*>(&interest)->setIsPint(1);
+
+          // FIB lookup
+          shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+          // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
+          pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
+
+          // dispatch pint to strategy
+          this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+                                                  cref(inFace), cref(interest), fibEntry, pitEntry));
+        }
+
+        // goto outgoing Data pipeline
+        this->onOutgoingData(*csMatch, inFace);
+
+        // This measures the time from receiving the interest until serving it from the
+        // cache. We only measure the execution time in cases of cache hits.
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> duration = end - start;
+
+        // std::cout << "cache hit? callback"<< std::endl;
+        if (m_forwardingDelayCallback != 0) {
+          m_forwardingDelayCallback(ns3::Simulator::Now(), duration.count());
+        }
+
+        return;
+      }
+    }
+
+    // insert InRecord
+    pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
+
+    // set PIT unsatisfy timer
+    this->setUnsatisfyTimer(pitEntry);
 
     // FIB lookup
     shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
 
-    // Cancel the unsatisfy and straggler timers
-    this->cancelUnsatisfyAndStragglerTimer(pitEntry);
-
-    // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
-    pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
-
+    // dispatch to strategy
     this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
                                             cref(inFace), cref(interest), fibEntry, pitEntry));
-    
-    // After sending pInt out, remove it from PIT
-    m_pit.erase(pitEntry);
-    return;
   }
-
-  // cancel unsatisfy & straggler timer
-  this->cancelUnsatisfyAndStragglerTimer(pitEntry);
-
-  // is pending?
-  const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
-  bool isPending = inRecords.begin() != inRecords.end();
-  if (!isPending) {
-    // CS lookup
-    const Data* csMatch;
-    shared_ptr<Data> match;
-    if (m_csFromNdnSim == nullptr)
-      csMatch = m_cs.find(interest);
-    else {
-      match = m_csFromNdnSim->Lookup(interest.shared_from_this());
-      csMatch = match.get();
-    }
-    if (csMatch != 0) {
-      const_cast<Data*>(csMatch)->setIncomingFaceId(FACEID_CONTENT_STORE);
-      // XXX should we lookup PIT for other Interests that also match csMatch?
-
-      // invoke PIT satisfy callback
-      beforeSatisfyInterest(*pitEntry, *m_csFace, *csMatch);
-      this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,
-                                              pitEntry, cref(*m_csFace), cref(*csMatch)));
-      // set PIT straggler timer
-      // this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
-
-      if (m_usePint) {
-        // Set the isPint flag
-        const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
-        const_cast<Interest*>(&interest)->setIsPint(1);
-
-        // FIB lookup
-        shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
-
-        // Put an entry in the PIT so it can be forwarded in Forwarder::onOutgoingInterest
-        pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
-
-        // dispatch pint to strategy
-        this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
-                                                cref(inFace), cref(interest), fibEntry, pitEntry));
-      }
-
-      // goto outgoing Data pipeline
-      this->onOutgoingData(*csMatch, inFace);
-
-      // This measures the time from receiving the interest until serving it from the
-      // cache. We only measure the execution time in cases of cache hits.
-      auto end = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<float> duration = end - start;
-
-      if (m_forwardingDelayCallback != 0) {
-        m_forwardingDelayCallback(ns3::Simulator::Now(), duration.count());
-      }
-
-      return;
-    }
-  }
-
-  // insert InRecord
-  pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
-
-  // set PIT unsatisfy timer
-  this->setUnsatisfyTimer(pitEntry);
-
-  // FIB lookup
-  shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
-
-  // dispatch to strategy
-  this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
-                                          cref(inFace), cref(interest), fibEntry, pitEntry));
 }
 
 void
