@@ -17,7 +17,7 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "accounting-consumer.hpp"
+#include "accounting-random-consumer.hpp"
 #include "ns3/ptr.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
@@ -32,41 +32,41 @@
 #include "model/ndn-app-face.hpp"
 #include "utils/ndn-fw-hop-count-tag.hpp"
 
-NS_LOG_COMPONENT_DEFINE("ndn.AccountingConsumer");
+NS_LOG_COMPONENT_DEFINE("ndn.AccountingRandomConsumer");
 
 namespace ns3 {
 namespace ndn {
 
-NS_OBJECT_ENSURE_REGISTERED(AccountingConsumer);
+NS_OBJECT_ENSURE_REGISTERED(AccountingRandomConsumer);
 
 TypeId
-AccountingConsumer::GetTypeId(void)
+AccountingRandomConsumer::GetTypeId(void)
 {
   static TypeId tid =
-    TypeId("ns3::ndn::AccountingConsumer")
+    TypeId("ns3::ndn::AccountingRandomConsumer")
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
-      .AddConstructor<AccountingConsumer>()
+      .AddConstructor<AccountingRandomConsumer>()
 
       .AddAttribute("NumberOfContents", "Number of the Contents in total", StringValue("100"),
-                    MakeUintegerAccessor(&AccountingConsumer::SetNumberOfContents,
-                                         &AccountingConsumer::GetNumberOfContents),
+                    MakeUintegerAccessor(&AccountingRandomConsumer::SetNumberOfContents,
+                                         &AccountingRandomConsumer::GetNumberOfContents),
                     MakeUintegerChecker<uint32_t>())
 
       .AddAttribute("q", "parameter of improve rank", StringValue("0.7"),
-                    MakeDoubleAccessor(&AccountingConsumer::SetQ,
-                                       &AccountingConsumer::GetQ),
+                    MakeDoubleAccessor(&AccountingRandomConsumer::SetQ,
+                                       &AccountingRandomConsumer::GetQ),
                     MakeDoubleChecker<double>())
 
       .AddAttribute("s", "parameter of power", StringValue("0.7"),
-                    MakeDoubleAccessor(&AccountingConsumer::SetS,
-                                       &AccountingConsumer::GetS),
+                    MakeDoubleAccessor(&AccountingRandomConsumer::SetS,
+                                       &AccountingRandomConsumer::GetS),
                     MakeDoubleChecker<double>());
 
   return tid;
 }
 
-AccountingConsumer::AccountingConsumer()
+AccountingRandomConsumer::AccountingRandomConsumer()
   : m_N(100) // needed here to make sure when SetQ/SetS are called, there is a valid value of N
   , m_q(0.7)
   , m_s(0.7)
@@ -75,12 +75,12 @@ AccountingConsumer::AccountingConsumer()
   // SetNumberOfContents is called by NS-3 object system during the initialization
 }
 
-AccountingConsumer::~AccountingConsumer()
+AccountingRandomConsumer::~AccountingRandomConsumer()
 {
 }
 
 void
-AccountingConsumer::SetNumberOfContents(uint32_t numOfContents)
+AccountingRandomConsumer::SetNumberOfContents(uint32_t numOfContents)
 {
   m_N = numOfContents;
 
@@ -100,46 +100,46 @@ AccountingConsumer::SetNumberOfContents(uint32_t numOfContents)
 }
 
 uint32_t
-AccountingConsumer::GetNumberOfContents() const
+AccountingRandomConsumer::GetNumberOfContents() const
 {
   return m_N;
 }
 
 void
-AccountingConsumer::SetQ(double q)
+AccountingRandomConsumer::SetQ(double q)
 {
   m_q = q;
   SetNumberOfContents(m_N);
 }
 
 double
-AccountingConsumer::GetQ() const
+AccountingRandomConsumer::GetQ() const
 {
   return m_q;
 }
 
 void
-AccountingConsumer::SetS(double s)
+AccountingRandomConsumer::SetS(double s)
 {
   m_s = s;
   SetNumberOfContents(m_N);
 }
 
 double
-AccountingConsumer::GetS() const
+AccountingRandomConsumer::GetS() const
 {
   return m_s;
 }
 
 void
-AccountingConsumer::OnData(shared_ptr<const Data> contentObject)
+AccountingRandomConsumer::OnData(shared_ptr<const Data> contentObject)
 {
   Consumer::OnData(contentObject); // default receive logic
   receiveCount++;
 }
 
 void
-AccountingConsumer::SendPacket()
+AccountingRandomConsumer::SendPacket()
 {
   if (!m_active)
     return;
@@ -175,17 +175,21 @@ AccountingConsumer::SendPacket()
       }
     }
 
-    seq = AccountingConsumer::GetNextSeq();
+    seq = AccountingRandomConsumer::GetNextSeq();
     m_seq++;
   }
 
   // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << seq << "\n";
 
-  //
   shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
   nameWithSequence->appendSequenceNumber(seq);
-  //
 
+  // Append the random nonce TO THE NAME (different from the loop nonce)
+  // 2 for good measure... heh.
+  nameWithSequence->appendNumber(m_rand.GetValue());
+  nameWithSequence->appendNumber(m_rand.GetValue());
+
+  // Now actually create the interest
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand.GetValue());
   interest->setName(*nameWithSequence);
@@ -216,12 +220,12 @@ AccountingConsumer::SendPacket()
   m_transmittedInterests(interest, this, m_face);
   m_face->onReceiveInterest(*interest);
 
-  AccountingConsumer::ScheduleNextPacket();
+  AccountingRandomConsumer::ScheduleNextPacket();
   sentCount++;
 }
 
 uint32_t
-AccountingConsumer::GetNextSeq()
+AccountingRandomConsumer::GetNextSeq()
 {
   uint32_t content_index = 1; //[1, m_N]
   double p_sum = 0;
@@ -246,17 +250,17 @@ AccountingConsumer::GetNextSeq()
 }
 
 void
-AccountingConsumer::ScheduleNextPacket()
+AccountingRandomConsumer::ScheduleNextPacket()
 {
 
   if (m_firstTime) {
-    m_sendEvent = Simulator::Schedule(Seconds(0.0), &AccountingConsumer::SendPacket, this);
+    m_sendEvent = Simulator::Schedule(Seconds(0.0), &AccountingRandomConsumer::SendPacket, this);
     m_firstTime = false;
   }
   else if (!m_sendEvent.IsRunning())
     m_sendEvent = Simulator::Schedule((m_random == 0) ? Seconds(1.0 / m_frequency)
                                                       : Seconds(m_random->GetValue()),
-                                      &AccountingConsumer::SendPacket, this);
+                                      &AccountingRandomConsumer::SendPacket, this);
 }
 
 } // namespace ndn

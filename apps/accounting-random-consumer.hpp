@@ -17,61 +17,75 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDN_ACCOUNTINGPRODUCER_H
-#define NDN_ACCOUNTINGPRODUCER_H
+#ifndef NDN_ACCOUNTING_RANDOM_CONSUMER_H
+#define NDN_ACCOUNTING_RANDOM_CONSUMER_H
 
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
-#include "ndn-app.hpp"
-#include "ns3/ndnSIM/model/ndn-common.hpp"
-
-#include "ns3/nstime.h"
-#include "ns3/ptr.h"
+#include "ndn-consumer-cbr.hpp"
 
 namespace ns3 {
 namespace ndn {
 
 /**
  * @ingroup ndn-apps
- * @brief A simple Interest-sink applia simple Interest-sink application
- *
- * A simple Interest-sink applia simple Interest-sink application,
- * which replying every incoming Interest with Data packet with a specified
- * size and name same as in Interest.cation, which replying every incoming Interest
- * with Data packet with a specified size and name same as in Interest.
+ * @brief Ndn application for sending out Interest packets at a "constant" rate (Poisson process)
  */
-class AccountingProducer : public App {
+class AccountingRandomConsumer : public ConsumerCbr {
 public:
   static TypeId
-  GetTypeId(void);
+  GetTypeId();
 
-  AccountingProducer();
-
-  // inherited from NdnApp
-  virtual void
-  OnInterest(shared_ptr<const Interest> interest);
+  // constructor
+  AccountingRandomConsumer();
+  ~AccountingRandomConsumer();
 
 protected:
-  // inherited from Application base class.
-  virtual void
-  StartApplication(); // Called at time specified by Start
 
   virtual void
-  StopApplication(); // Called at time specified by Stop
+  SendPacket();
+
+  virtual void
+  OnData(shared_ptr<const Data> data);
+
+  uint32_t
+  GetNextSeq();
+
+  virtual void
+  ScheduleNextPacket();
 
 private:
-  Name m_prefix;
-  Name m_postfix;
-  uint32_t m_virtualPayloadSize;
-  Time m_freshness;
+  void
+  SetNumberOfContents(uint32_t numOfContents);
 
-  uint32_t m_signature;
-  uint32_t receivedPints;
-  uint32_t receivedInterests;
-  Name m_keyLocator;
+  uint32_t
+  GetNumberOfContents() const;
+
+  void
+  SetQ(double q);
+
+  double
+  GetQ() const;
+
+  void
+  SetS(double s);
+
+  double
+  GetS() const;
+
+private:
+  uint32_t m_N;               // number of the contents
+  double m_q;                 // q in (k+q)^s
+  double m_s;                 // s in (k+q)^s
+  std::vector<double> m_Pcum; // cumulative probability
+  uint64_t sentCount;
+  uint64_t receiveCount;
+
+  UniformVariable m_SeqRng; // RNG
+
 };
 
 } // namespace ndn
 } // namespace ns3
-
-#endif // NDN_ACCOUNTINGPRODUCER_H
+ 
+#endif // NDN_ACCOUNTING_RANDOM_CONSUMER_H

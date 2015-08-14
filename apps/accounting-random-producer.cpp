@@ -17,7 +17,7 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "accounting-producer.hpp"
+#include "accounting-random-producer.hpp"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/uinteger.h"
@@ -31,52 +31,52 @@
 
 #include <memory>
 
-NS_LOG_COMPONENT_DEFINE("ndn.AccountingProducer");
+NS_LOG_COMPONENT_DEFINE("ndn.AccountingRandomProducer");
 
 namespace ns3 {
 namespace ndn {
 
-NS_OBJECT_ENSURE_REGISTERED(AccountingProducer);
+NS_OBJECT_ENSURE_REGISTERED(AccountingRandomProducer);
 
 TypeId
-AccountingProducer::GetTypeId(void)
+AccountingRandomProducer::GetTypeId(void)
 {
   static TypeId tid =
-    TypeId("ns3::ndn::AccountingProducer")
+    TypeId("ns3::ndn::AccountingRandomProducer")
       .SetGroupName("Ndn")
       .SetParent<App>()
-      .AddConstructor<AccountingProducer>()
+      .AddConstructor<AccountingRandomProducer>()
       .AddAttribute("Prefix", "Prefix, for which producer has the data", StringValue("/"),
-                    MakeNameAccessor(&AccountingProducer::m_prefix), MakeNameChecker())
+                    MakeNameAccessor(&AccountingRandomProducer::m_prefix), MakeNameChecker())
       .AddAttribute(
          "Postfix",
          "Postfix that is added to the output data (e.g., for adding producer-uniqueness)",
-         StringValue("/"), MakeNameAccessor(&AccountingProducer::m_postfix), MakeNameChecker())
+         StringValue("/"), MakeNameAccessor(&AccountingRandomProducer::m_postfix), MakeNameChecker())
       .AddAttribute("PayloadSize", "Virtual payload size for Content packets", UintegerValue(1024),
-                    MakeUintegerAccessor(&AccountingProducer::m_virtualPayloadSize),
+                    MakeUintegerAccessor(&AccountingRandomProducer::m_virtualPayloadSize),
                     MakeUintegerChecker<uint32_t>())
       .AddAttribute("Freshness", "Freshness of data packets, if 0, then unlimited freshness",
-                    TimeValue(Seconds(0)), MakeTimeAccessor(&AccountingProducer::m_freshness),
+                    TimeValue(Seconds(0)), MakeTimeAccessor(&AccountingRandomProducer::m_freshness),
                     MakeTimeChecker())
       .AddAttribute(
          "Signature",
          "Fake signature, 0 valid signature (default), other values application-specific",
-         UintegerValue(0), MakeUintegerAccessor(&AccountingProducer::m_signature),
+         UintegerValue(0), MakeUintegerAccessor(&AccountingRandomProducer::m_signature),
          MakeUintegerChecker<uint32_t>())
       .AddAttribute("KeyLocator",
                     "Name to be used for key locator.  If root, then key locator is not used",
-                    NameValue(), MakeNameAccessor(&AccountingProducer::m_keyLocator), MakeNameChecker());
+                    NameValue(), MakeNameAccessor(&AccountingRandomProducer::m_keyLocator), MakeNameChecker());
   return tid;
 }
 
-AccountingProducer::AccountingProducer()
+AccountingRandomProducer::AccountingRandomProducer()
 {
   NS_LOG_FUNCTION_NOARGS();
 }
 
 // inherited from Application base class.
 void
-AccountingProducer::StartApplication()
+AccountingRandomProducer::StartApplication()
 {
   NS_LOG_FUNCTION_NOARGS();
   App::StartApplication();
@@ -85,7 +85,7 @@ AccountingProducer::StartApplication()
 }
 
 void
-AccountingProducer::StopApplication()
+AccountingRandomProducer::StopApplication()
 {
   NS_LOG_FUNCTION_NOARGS();
 
@@ -93,7 +93,7 @@ AccountingProducer::StopApplication()
 }
 
 void
-AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
+AccountingRandomProducer::OnInterest(shared_ptr<const Interest> interest)
 {
   App::OnInterest(interest); // tracing inside
 
