@@ -7,19 +7,19 @@
 #include <fstream>
 #include <chrono>
 
-#define GROUP_SIZE 160
+#define GROUP_SIZE 80
 #define NUM_OF_GROUPS 16
 #define NUM_OF_CONSUMERS NUM_OF_GROUPS * GROUP_SIZE
 #define NUM_OF_ROUTERS 42
 #define NUM_OF_PRODUCER 1
 #define TOTAL_NODES NUM_OF_CONSUMERS + NUM_OF_ROUTERS + NUM_OF_PRODUCER
-#define USE_PINT true
+#define USE_PINT false
 
 using namespace std;
 using namespace std::chrono;
 
-#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr2560-PINT"
-#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr2560-PINT"
+#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr1280-NOPINTENCR"
+#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr1280-NOPINTENCR"
 #define SIMULATION_DURATION 1000.0
 
 namespace ns3 {
@@ -187,8 +187,11 @@ namespace ns3 {
       ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, USE_PINT);
     }
 
+    
+    // Installing applications
+
     // Consumers
-    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
+    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingEncrConsumer");
     // Consumer will request /prefix/A/0, /prefix/A/1, ...
     consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
     consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
@@ -200,12 +203,12 @@ namespace ns3 {
     }
 
     // Producer
-    ndn::AppHelper producerHelper("ns3::ndn::AccountingProducer");
+    ndn::AppHelper producerHelper("ns3::ndn::AccountingEncrProducer");
     // Producer will reply to all requests starting with /prefix/A. For /prefix/B we expect NACK
     producerHelper.SetPrefix("/prefix/A");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
     producerHelper.Install(nodes.Get(producerId));
-
+    
     // Traces
     ndn::L3RateTracer::InstallAll(RATE_OUTPUT_FILE_NAME, Seconds(1.0));
 

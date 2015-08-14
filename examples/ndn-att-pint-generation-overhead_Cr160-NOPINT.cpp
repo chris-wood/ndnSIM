@@ -162,7 +162,8 @@ namespace ns3 {
     // 41 done
 
     // Connecting producer(s)
-    p2p.Install (nodes.Get (0 + NUM_OF_CONSUMERS + NUM_OF_ROUTERS), nodes.Get (0 + NUM_OF_CONSUMERS));      // P0 <--> R0
+    int producerId = 0 + NUM_OF_CONSUMERS + NUM_OF_ROUTERS;
+    p2p.Install (nodes.Get (producerId), nodes.Get (0 + NUM_OF_CONSUMERS));      // P0 <--> R0
 
 
     // Install NDN stack without cache
@@ -186,40 +187,24 @@ namespace ns3 {
       ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, USE_PINT);
     }
 
-    /*
-    // Installing applications
-
-    // Honest Consumers
-    ndn::AppHelper consumerHelperHonest("ns3::ndn::ConsumerCbr");
+    // Consumers
+    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingRandomConsumer");
     // Consumer will request /prefix/A/0, /prefix/A/1, ...
     consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
     consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
     consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
-    for(int i=0; i < numberOfHonestConsumers; i++) {
+    for(int i=0; i < NUM_OF_CONSUMERS; i++) {
       consumerHelperHonest.SetPrefix("/prefix/A/" + std::to_string(i));
       ApplicationContainer consumer = consumerHelperHonest.Install(nodes.Get(i));
       consumer.Start(Seconds(0));
     }
 
-    // Malicious Consumer
-    ndn::AppHelper consumerHelperMalicious("ns3::ndn::ConsumerCbr");
-    // Consumer will request /prefix/B/0, /prefix/B/1, ...
-    consumerHelperMalicious.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
-    consumerHelperMalicious.SetAttribute("Randomize", StringValue("uniform"));
-    consumerHelperMalicious.SetAttribute("StartSeq", IntegerValue(0));
-    for(int i=numberOfHonestConsumers; i < numberOfHonestConsumers+numberOfMaliciousConsumers; i++) {
-      consumerHelperMalicious.SetPrefix("/prefix/B/" + std::to_string(i));
-      ApplicationContainer consumer = consumerHelperMalicious.Install(nodes.Get(i));
-      consumer.Start(Seconds(0));
-    }
-
     // Producer
-    ndn::AppHelper producerHelper("ns3::ndn::Producer");
+    ndn::AppHelper producerHelper("ns3::ndn::AccountingRandomProducer");
     // Producer will reply to all requests starting with /prefix/A. For /prefix/B we expect NACK
     producerHelper.SetPrefix("/prefix/A");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
     producerHelper.Install(nodes.Get(producerId));
-    */
 
     // Traces
     ndn::L3RateTracer::InstallAll(RATE_OUTPUT_FILE_NAME, Seconds(1.0));

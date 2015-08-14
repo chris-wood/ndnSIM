@@ -7,7 +7,7 @@
 #include <fstream>
 #include <chrono>
 
-#define GROUP_SIZE 20
+#define GROUP_SIZE 80
 #define NUM_OF_GROUPS 16
 #define NUM_OF_CONSUMERS NUM_OF_GROUPS * GROUP_SIZE
 #define NUM_OF_ROUTERS 30
@@ -24,8 +24,8 @@ int outRouters[OUT_ROUTERS_COUNT] = {0, 1, 2, 3, 5, 6, 8, 10, 11, 12, 17, 18, 20
 using namespace std;
 using namespace std::chrono;
 
-#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr320-NOPINT"
-#define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr320-NOPINT"
+#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr1280-NOPINTENCR"
+#define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr1280-NOPINTENCR"
 #define SIMULATION_DURATION 1000.0
 
 namespace ns3 {
@@ -180,7 +180,7 @@ namespace ns3 {
     }
 
         // Consumers
-    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingRandomConsumer");
+    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingEncrConsumer");
     // Consumer will request /prefix/A/0, /prefix/A/1, ...
     consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
     consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
@@ -192,7 +192,7 @@ namespace ns3 {
     }
 
     // Producer
-    ndn::AppHelper producerHelper("ns3::ndn::AccountingRandomProducer");
+    ndn::AppHelper producerHelper("ns3::ndn::AccountingEncrProducer");
     // Producer will reply to all requests starting with /prefix/A. For /prefix/B we expect NACK
     producerHelper.SetPrefix("/prefix/A");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));

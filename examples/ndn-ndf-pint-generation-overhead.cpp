@@ -224,9 +224,9 @@ namespace ns3 {
     ndnHelper.InstallAll();
 
     for (int i = NUM_OF_CONSUMERS; i < NUM_OF_CONSUMERS + NUM_OF_ROUTERS; i++) {
-      ndn::StrategyChoiceHelper::InstallWithCallback(nodes.Get(i),
-						     "/prefix/A",
-						     (size_t)&ForwardingDelay);
+      // ndn::StrategyChoiceHelper::InstallWithCallback(nodes.Get(i),
+						//      "/prefix/A",
+						//      (size_t)&ForwardingDelay);
     }
 
     // Installing applications
