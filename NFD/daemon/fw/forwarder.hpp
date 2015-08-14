@@ -70,6 +70,9 @@ public:
   void
   setForwardingDelayCallback(size_t forwardingDelayCallback);
 
+  void
+  setUsePint(bool usePint);
+
 public: // faces
   FaceTable&
   getFaceTable();
@@ -235,6 +238,7 @@ private:
   friend class fw::Strategy;
 
   ForwardingDelayCallback m_forwardingDelayCallback;
+  bool m_usePint = true;
 };
 
 inline const ForwarderCounters&
@@ -325,6 +329,12 @@ inline void
 Forwarder::setForwardingDelayCallback(size_t forwardingDelayCallback)
 {
   m_forwardingDelayCallback = reinterpret_cast<ForwardingDelayCallback>(forwardingDelayCallback);
+}
+
+inline void
+Forwarder::setUsePint(bool usePint)
+{
+  m_usePint = usePint;
 }
 
 #ifdef WITH_TESTS

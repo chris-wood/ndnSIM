@@ -7,18 +7,19 @@
 #include <fstream>
 #include <chrono>
 
-#define GROUP_SIZE 40
+#define GROUP_SIZE 10
 #define NUM_OF_GROUPS 16
 #define NUM_OF_CONSUMERS NUM_OF_GROUPS * GROUP_SIZE
 #define NUM_OF_ROUTERS 42
 #define NUM_OF_PRODUCER 1
 #define TOTAL_NODES NUM_OF_CONSUMERS + NUM_OF_ROUTERS + NUM_OF_PRODUCER
+#define USE_PINT true
 
 using namespace std;
 using namespace std::chrono;
 
-#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr640"
-#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr640"
+#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr160-PINT"
+#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr160-PINT"
 #define SIMULATION_DURATION 1000.0
 
 namespace ns3 {
@@ -182,7 +183,7 @@ namespace ns3 {
     ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "0");
     // Install on routers
     for (int i = NUM_OF_CONSUMERS; i < NUM_OF_CONSUMERS + NUM_OF_ROUTERS; i++) {
-      ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay);
+      ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, USE_PINT);
     }
 
     /*
