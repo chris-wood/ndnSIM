@@ -170,17 +170,18 @@ AccountingConsumer::SendPacket()
     break;
   }
 
-  if (seq == std::numeric_limits<uint32_t>::max()) // no retransmission
-  {
-    if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
-      if (m_seq >= m_seqMax) {
-        return; // done
-      }
-    }
+  //if (seq == std::numeric_limits<uint32_t>::max()) // no retransmission
+  //{
+  //  if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
+  //    if (m_seq >= m_seqMax) {
+  //      return; // done
+  //    }
+  //  }
 
     // seq = AccountingConsumer::GetNextSeq();
-    seq = m_seq++;
-  }
+  //  seq = m_seq++;
+  //}
+  seq = 0;
 
   shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
   nameWithSequence->appendSequenceNumber(seq);
