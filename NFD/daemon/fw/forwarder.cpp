@@ -96,22 +96,22 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
   }
 
   if (interest.getIsPint() == 1) { // pInt is already set... forward, no PIT state, done.
-    // FIB lookup 
-    if (m_forwardingDelayCallback != 0)
-      std::cout << "pInt is received by router" << std::endl;
+    //  if (m_forwardingDelayCallback != 0)
+    //  std::cout << "router receives pint" << std::endl;
 
-    // FIB lookup
-    shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
-
-    // dispatch to strategy
-    this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
-                                            cref(inFace), cref(interest), fibEntry, pitEntry));
-    m_pit.erase(pitEntry);
+    shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(interest.getName());
+    const fib::NextHopList& nexthops = fibEntry->getNextHops();
+    // %%%CESAR: CAW, picking the first interface causing a loop. Apparently one of
+    //           the possible nexthops will make it to the producer.
+    // fib::NextHopList::const_iterator it = nexthops.begin(); // pick the first outgoing face
+    for (fib::NextHopList::const_iterator it = nexthops.begin(); it != nexthops.end(); it++) {
+      shared_ptr<Face> outFace = it->getFace();
+      // %%%CESAR: if these lines are uncommented, pint will loop in the same router.
+      //outFace->sendInterest(interest);
+      //++m_counters.getNOutInterests();
+    }
     return;
   }
-
-  if (m_forwardingDelayCallback != 0)
-    std::cout << "interest is received by router" << std::endl;
 
   // cancel unsatisfy & straggler timer
   this->cancelUnsatisfyAndStragglerTimer(pitEntry);
@@ -131,21 +131,40 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     }
     if (csMatch != 0) {
 
-      if (m_usePint) {
-        shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(interest.getName());
-        const fib::NextHopList& nexthops = fibEntry->getNextHops();
-        fib::NextHopList::const_iterator it = nexthops.begin(); // pick the first outgoing face
-        shared_ptr<Face> outFace = it->getFace();
+      //      if (m_forwardingDelayCallback != 0)
+      //  std::cout << "Cache hit" << std::endl;
 
+      if (m_usePint) {
         // Set the isPint flag
+        //        const_cast<Interest*>(&(pitEntry->getInterest()))->setIsPint(1);
         const_cast<Interest*>(&interest)->setIsPint(1);
 
-        outFace->sendInterest(interest);
-        ++m_counters.getNOutInterests();
-      }
+        shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(interest.getName());
+        const fib::NextHopList& nexthops = fibEntry->getNextHops();
 
-      if (m_forwardingDelayCallback != 0)
-        std::cout << "Cache hit" << std::endl;
+        // %%%CESAR: CAW, picking the first interface causing a loop. Apparently one of
+        //           the possible nexthops will make it to the producer.
+        // fib::NextHopList::const_iterator it = nexthops.begin(); // pick the first outgoing face
+        for (fib::NextHopList::const_iterator it = nexthops.begin(); it != nexthops.end(); it++) {
+          shared_ptr<Face> outFace = it->getFace();
+          outFace->sendInterest(interest);
+          ++m_counters.getNOutInterests();
+        }
+        /*
+        // insert InRecord
+        pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
+
+        // set PIT unsatisfy timer
+        this->setUnsatisfyTimer(pitEntry);
+
+        // FIB lookup
+        shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+        // dispatch to strategy
+        this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+                                                cref(inFace), cref(interest), fibEntry, pitEntry));
+        */
+      }
 
       const_cast<Data*>(csMatch)->setIncomingFaceId(FACEID_CONTENT_STORE);
       // XXX should we lookup PIT for other Interests that also match csMatch?
@@ -170,22 +189,23 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
 
       return;
     }
-
-    if (m_forwardingDelayCallback != 0)
-      std::cout << "Cache miss" << std::endl;
-    // insert InRecord
-    pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
-
-    // set PIT unsatisfy timer
-    this->setUnsatisfyTimer(pitEntry);
-
-    // FIB lookup
-    shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
-
-    // dispatch to strategy
-    this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
-                                            cref(inFace), cref(interest), fibEntry, pitEntry));
   }
+
+  //  if (m_forwardingDelayCallback != 0)
+  //  std::cout << "Cache miss" << std::endl;
+
+  // insert InRecord
+  pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
+
+  // set PIT unsatisfy timer
+  this->setUnsatisfyTimer(pitEntry);
+
+  // FIB lookup
+  shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+  // dispatch to strategy
+  this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+                                            cref(inFace), cref(interest), fibEntry, pitEntry));
 }
 
 void
@@ -246,19 +266,21 @@ Forwarder::onOutgoingInterest(shared_ptr<pit::Entry> pitEntry, Face& outFace,
   const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
   pit::InRecordCollection::const_iterator pickedInRecord = std::max_element(
     inRecords.begin(), inRecords.end(), bind(&compare_pickInterest, _1, _2, &outFace));
-
+    
   if (pickedInRecord != inRecords.end()) {
-   // TODO? 
+    // TODO? 
   }
 
   BOOST_ASSERT(pickedInRecord != inRecords.end());
   shared_ptr<Interest> interest = const_pointer_cast<Interest>(
     pickedInRecord->getInterest().shared_from_this());
 
-  if (wantNewNonce) {
-    interest = make_shared<Interest>(*interest);
-    static boost::random::uniform_int_distribution<uint32_t> dist;
-    interest->setNonce(dist(getGlobalRng()));
+  if (pitEntry->getInterest().getIsPint() != 1) {
+    if (wantNewNonce) {
+      interest = make_shared<Interest>(*interest);
+      static boost::random::uniform_int_distribution<uint32_t> dist;
+      interest->setNonce(dist(getGlobalRng()));
+    }
   }
 
   // insert OutRecord
