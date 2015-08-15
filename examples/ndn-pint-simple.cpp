@@ -10,7 +10,7 @@
 using namespace std;
 using namespace std::chrono;
 
-#define NUM_CONSUMERS 10
+#define NUM_CONSUMERS 1
 #define NUM_ROUTERS 1
 #define NUM_PRODUCER 1
 
@@ -64,7 +64,7 @@ namespace ns3 {
     // Install NDN stack with cache
     ndn::StackHelper ndnHelperWithCache;
     ndnHelperWithCache.SetDefaultRoutes(true);
-    ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10"); // no max size
+    ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000"); // no max size
     ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 0), (size_t)&ForwardingDelay, true);
 
     ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
@@ -84,7 +84,7 @@ namespace ns3 {
     ndn::AppHelper producerHelper("ns3::ndn::AccountingProducer");
     producerHelper.SetPrefix("/prefix/A/");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-    producerHelper.SetAttribute("Freshness", TimeValue(Seconds(SIMULATION_DURATION)));
+    producerHelper.SetAttribute("Freshness", TimeValue(Seconds(100* SIMULATION_DURATION)));
     producerHelper.Install(nodes.Get(NUM_CONSUMERS + NUM_ROUTERS + 0));
 
     // Traces
