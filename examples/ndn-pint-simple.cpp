@@ -16,7 +16,7 @@ using namespace std::chrono;
 
 #define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr80-PINT"
 #define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr80-PINT"
-#define SIMULATION_DURATION 10.0 // real-time?
+#define SIMULATION_DURATION 5.0 // real-time?
 
 namespace ns3 {
   ofstream delayFile;
@@ -74,12 +74,10 @@ namespace ns3 {
     consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
     consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
     consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
-    consumerHelperHonest.SetAttribute("MaxSeq", IntegerValue(10));
     consumerHelperHonest.SetPrefix("/prefix/A/"); // + std::to_string(i));
     for (int i = 0; i < NUM_CONSUMERS; i++) {
       consumerHelperHonest.SetAttribute("ConsumerID", IntegerValue(i));
       ApplicationContainer consumer = consumerHelperHonest.Install(nodes.Get(i));
-      consumer.Start(Seconds(0));
     }
 
     // Producer
@@ -87,7 +85,7 @@ namespace ns3 {
     ndn::AppHelper producerHelper("ns3::ndn::AccountingProducer");
     producerHelper.SetPrefix("/prefix/A/");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-    producerHelper.SetAttribute("Freshness", TimeValue(Seconds(100* SIMULATION_DURATION)));
+    producerHelper.SetAttribute("Freshness", TimeValue(Seconds(SIMULATION_DURATION)));
     producerHelper.Install(nodes.Get(NUM_CONSUMERS + NUM_ROUTERS + 0));
 
     // Traces

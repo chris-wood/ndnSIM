@@ -150,7 +150,8 @@ AccountingConsumer::OnData(shared_ptr<const Data> contentObject)
 {
   Consumer::OnData(contentObject); // default receive logic
   receiveCount++;
-  std::cout << m_id << ": got data back with name " << contentObject->getName() << std::endl;
+  std::cout << "> Consumer(" << m_id << ") got data back with name "
+            << contentObject->getName() << std::endl;
 }
 
 void
@@ -185,6 +186,9 @@ AccountingConsumer::SendPacket()
 
   shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
   nameWithSequence->appendSequenceNumber(seq);
+
+  std::cout << "> Consumer(" << GetNode()->GetId() << ") is sending interest, "
+            << nameWithSequence->toUri() << std::endl;
 
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand.GetValue());
