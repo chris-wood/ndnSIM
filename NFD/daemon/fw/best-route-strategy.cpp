@@ -52,6 +52,7 @@ BestRouteStrategy::afterReceiveInterest(const Face& inFace,
                    shared_ptr<fib::Entry> fibEntry,
                    shared_ptr<pit::Entry> pitEntry)
 {
+    std::cout << "BEST ROUTE" << std::endl;
   if (pitEntry->hasUnexpiredOutRecords()) {
     // not a new Interest, don't forward
     return;

@@ -55,7 +55,7 @@ protected:
   ScheduleNextPacket();
 
 private:
-  void 
+  void
   SetConsumerID(uint32_t id);
 
   uint32_t

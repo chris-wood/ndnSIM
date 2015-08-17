@@ -350,6 +350,19 @@ Forwarder::dispatchToStrategy(shared_ptr<pit::Entry> pitEntry, Function trigger)
   trigger(&strategy);
 }
 
+// #ifdef WITH_TESTS
+// inline void
+// Forwarder::dispatchToStrategyByName(shared_ptr<Name> name, function<void(fw::Strategy*)> trigger)
+// #else
+// template<class Function>
+// inline void
+// Forwarder::dispatchToStrategyByName(shared_ptr<Name> name, Function trigger)
+// #endif
+// {
+//   fw::Strategy& strategy = m_strategyChoice.findEffectiveStrategy(*name);
+//   trigger(&strategy);
+// }
+
 } // namespace nfd
 
 #endif // NFD_DAEMON_FW_FORWARDER_HPP

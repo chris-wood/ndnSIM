@@ -47,7 +47,7 @@ AccountingConsumer::GetTypeId(void)
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
       .AddConstructor<AccountingConsumer>()
-      .AddAttribute("ConsumerID", "Consumer ID", 
+      .AddAttribute("ConsumerID", "Consumer ID",
                     IntegerValue(std::numeric_limits<uint32_t>::max()),
                     MakeIntegerAccessor(&AccountingConsumer::m_id), MakeIntegerChecker<uint32_t>())
       .AddAttribute("NumberOfContents", "Number of the Contents in total", StringValue("100"),
@@ -81,7 +81,7 @@ AccountingConsumer::~AccountingConsumer()
 {
 }
 
-void 
+void
 AccountingConsumer::SetConsumerID(uint32_t id)
 {
   m_id = id;

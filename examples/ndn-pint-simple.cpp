@@ -11,7 +11,7 @@ using namespace std;
 using namespace std::chrono;
 
 #define NUM_CONSUMERS 1
-#define NUM_ROUTERS 1
+#define NUM_ROUTERS 2
 #define NUM_PRODUCER 1
 
 #define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr80-PINT"
@@ -50,7 +50,9 @@ namespace ns3 {
     for (int i = 0; i < NUM_CONSUMERS; i++) {
       p2p.Install(nodes.Get (i), nodes.Get (NUM_CONSUMERS + 0)); // Cr <-> R
     }
-    p2p.Install(nodes.Get (NUM_CONSUMERS + 0), nodes.Get (NUM_CONSUMERS + NUM_ROUTERS + 0)); // R <-> P
+    p2p.Install(nodes.Get (NUM_CONSUMERS + 0), nodes.Get (NUM_CONSUMERS + 1)); // R1 <-> R2
+    p2p.Install(nodes.Get (NUM_CONSUMERS + 1), nodes.Get (NUM_CONSUMERS + NUM_ROUTERS + 0)); // R2 <-> P
+    // p2p.Install(nodes.Get (NUM_CONSUMERS + 0), nodes.Get (NUM_CONSUMERS + NUM_ROUTERS + 0)); // R2 <-> P
 
     // Install NDN stack without cache on consumers
     ndn::StackHelper ndnHelperNoCache;
@@ -66,6 +68,7 @@ namespace ns3 {
     ndnHelperWithCache.SetDefaultRoutes(true);
     ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000"); // no max size
     ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 0), (size_t)&ForwardingDelay, true);
+    ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 1), (size_t)&ForwardingDelay, true);
 
     ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
     consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
@@ -74,7 +77,7 @@ namespace ns3 {
     consumerHelperHonest.SetAttribute("MaxSeq", IntegerValue(10));
     consumerHelperHonest.SetPrefix("/prefix/A/"); // + std::to_string(i));
     for (int i = 0; i < NUM_CONSUMERS; i++) {
-      consumerHelperHonest.SetAttribute("ConsumerID", IntegerValue(i)); 
+      consumerHelperHonest.SetAttribute("ConsumerID", IntegerValue(i));
       ApplicationContainer consumer = consumerHelperHonest.Install(nodes.Get(i));
       consumer.Start(Seconds(0));
     }
@@ -103,7 +106,7 @@ namespace ns3 {
 
 int
 main(int argc, char* argv[])
-{ 
+{
   //LogComponentEnable ("nfd.Forwarder", ns3::LOG_LEVEL_DEBUG);
   return ns3::run(argc, argv);
 }

@@ -64,9 +64,9 @@ namespace ns3 {
       p2p.Install (nodes.Get (g), nodes.Get (0 + NUM_OF_CONSUMERS));      // C0 <--> R0
     }
 
-    for (int i = 0; i < GROUP_SIZE - 1; i++, g++) {
-      p2p.Install (nodes.Get (g), nodes.Get (1 + NUM_OF_CONSUMERS));      // C1 <--> R1
-    }
+    // for (int i = 0; i < GROUP_SIZE; i++, g++) {
+    //   p2p.Install (nodes.Get (g), nodes.Get (1 + NUM_OF_CONSUMERS));      // C1 <--> R1
+    // }
     // for (int i = 0; i < GROUP_SIZE; i++, g++)
     //   p2p.Install (nodes.Get (g), nodes.Get (3 + NUM_OF_CONSUMERS));      // C2 <--> R3
     // for (int i = 0; i < GROUP_SIZE; i++, g++)
