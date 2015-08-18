@@ -118,8 +118,8 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
   // }
   // m_pit.erase(pitEntry);
 
-  if (m_forwardingDelayCallback != 0)
-    std::cout << "interest is received by router" << std::endl;
+  //if (m_forwardingDelayCallback != 0)
+  //  std::cout << "interest is received by router" << std::endl;
 
   // cancel unsatisfy & straggler timer
   // this->cancelUnsatisfyAndStragglerTimer(pitEntry);
@@ -161,8 +161,8 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
         }
       }
 
-      if (m_forwardingDelayCallback != 0)
-        std::cout << "Cache hit" << std::endl;
+      //if (m_forwardingDelayCallback != 0)
+      //  std::cout << "Cache hit" << std::endl;
 
       const_cast<Data*>(csMatch)->setIncomingFaceId(FACEID_CONTENT_STORE);
 
@@ -189,8 +189,8 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       return;
     }
 
-    if (m_forwardingDelayCallback != 0)
-      std::cout << "Cache miss" << std::endl;
+    //if (m_forwardingDelayCallback != 0)
+    //  std::cout << "Cache miss" << std::endl;
 
     // insert PIT entry and then InRecord
     shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
