@@ -105,12 +105,11 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
 
         while (it != nexthops.end()) {
           shared_ptr<Face> face = it->getFace();
-          if (!face->isLocal() && face->getId() != inFace.getId()) {  // pitEntry->canForwardTo(*face) &&
+          if (!face->isLocal() && face->getId() != inFace.getId()) {
               shared_ptr<Interest> pInt = make_shared<Interest>(interest.getName());
               pInt->setIsPint(1);
               pInt->setPayload(interest.getPayload());
-              pInt->getNonce();
-              pInt->setInterestLifetime(time::milliseconds(10000));
+              pInt->setNonce(interest.getNonce());
               pInt->setNextHopFaceId(it->getFace()->getId());
 
               face->sendInterest(*pInt);
@@ -123,10 +122,9 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       //if (m_forwardingDelayCallback != 0)
       //  std::cout << "Cache hit" << std::endl;
 
-      const_cast<Data*>(csMatch)->setIncomingFaceId(FACEID_CONTENT_STORE);
-
       // invoke PIT satisfy callback
       if (interest.getIsPint() == 0) {
+          const_cast<Data*>(csMatch)->setIncomingFaceId(FACEID_CONTENT_STORE);
           shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
 
           // detect duplicate Nonce
