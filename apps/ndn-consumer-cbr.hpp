@@ -24,6 +24,8 @@
 
 #include "ndn-consumer.hpp"
 
+static const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
 namespace ns3 {
 namespace ndn {
 
@@ -36,7 +38,6 @@ struct NameTime {
   Name name;
   Time rtt;
 };
-
 
 /**
  * @ingroup ndn-apps

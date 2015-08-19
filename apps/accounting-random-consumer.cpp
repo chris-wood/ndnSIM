@@ -34,6 +34,13 @@
 
 NS_LOG_COMPONENT_DEFINE("ndn.AccountingRandomConsumer");
 
+char
+randomChar2()
+{
+    int stringLength = sizeof(alphanum) - 1;
+    return alphanum[rand() % stringLength];
+}
+
 namespace ns3 {
 namespace ndn {
 
@@ -174,30 +181,11 @@ AccountingRandomConsumer::SendPacket()
     seq = *m_retxSeqs.begin();
     m_retxSeqs.erase(m_retxSeqs.begin());
 
-    // NS_ASSERT (m_seqLifetimes.find (seq) != m_seqLifetimes.end ());
-    // if (m_seqLifetimes.find (seq)->time <= Simulator::Now ())
-    //   {
-
-    //     NS_LOG_DEBUG ("Expire " << seq);
-    //     m_seqLifetimes.erase (seq); // lifetime expired. Trying to find another unexpired
-    //     sequence number
-    //     continue;
-    //   }
     NS_LOG_DEBUG("=interest seq " << seq << " from m_retxSeqs");
     break;
   }
 
-  if (seq == std::numeric_limits<uint32_t>::max()) // no retransmission
-  {
-    if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
-      if (m_seq >= m_seqMax) {
-        return; // we are totally done
-      }
-    }
-
-    seq = AccountingRandomConsumer::GetNextSeq();
-    m_seq++;
-  }
+  seq = 0;
 
   // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << seq << "\n";
 
@@ -208,6 +196,13 @@ AccountingRandomConsumer::SendPacket()
   // 2 for good measure... heh.
   nameWithSequence->appendNumber(m_rand.GetValue());
   nameWithSequence->appendNumber(m_rand.GetValue());
+
+  char randomString[32] = {0};
+  for(unsigned int i = 0; i < 32; ++i)
+  {
+    randomString[i] = randomChar2();
+  }
+  nameWithSequence->append(randomString);
 
   // Now actually create the interest
   shared_ptr<Interest> interest = make_shared<Interest>();
@@ -239,6 +234,9 @@ AccountingRandomConsumer::SendPacket()
 
   m_transmittedInterests(interest, this, m_face);
   m_face->onReceiveInterest(*interest);
+
+  NameTime *nt = new NameTime(interest->getName(), Simulator::Now());
+  startTimes.push_back(nt);
 
   AccountingRandomConsumer::ScheduleNextPacket();
   sentCount++;

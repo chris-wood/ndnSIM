@@ -29,10 +29,19 @@
 #include "ns3/integer.h"
 #include "ns3/double.h"
 
+#include <map>
+
 #include "model/ndn-app-face.hpp"
 #include "utils/ndn-fw-hop-count-tag.hpp"
 
 NS_LOG_COMPONENT_DEFINE("ndn.AccountingEncrConsumer");
+
+char
+randomChar1()
+{
+    int stringLength = sizeof(alphanum) - 1;
+    return alphanum[rand() % stringLength];
+}
 
 namespace ns3 {
 namespace ndn {
@@ -141,22 +150,51 @@ AccountingEncrConsumer::OnData(shared_ptr<const Data> contentObject)
   Consumer::OnData(contentObject); // default receive logic
   receiveCount++;
 
-  for(std::vector<NameTime*>::iterator it = startTimes.begin(); it != startTimes.end(); ++it) {
-     NameTime *nt = *it;
-     if (nt->name == contentObject->getName()) {
-         NameTime *nameRtt = new NameTime(contentObject->getName(), Simulator::Now());;
-         nameRtt->name = contentObject->getName();
-         nameRtt->rtt = (Simulator::Now() - nt->rtt);
+  Name name = contentObject->getName();
+  std::string nameUri = name.toUri();
+  receivedNames.push_back(nameUri);
 
-         rtts.push_back(nameRtt);
-         m_receivedMeaningfulContent(this);
-
-         delete nt;
-         startTimes.erase(it); // drop it from the list, and go on with our lives
-
-         break;
-     }
+  std::string contentName;
+  std::string keyName;
+  std::map<std::string, std::string>::iterator itr = contentToKeyMap.find(nameUri);
+  if (itr != contentToKeyMap.end()) { // we received a data packet, mapped to key packet
+      contentName = nameUri;
+      keyName = itr->second;
+  } else { // received a key packet, mapped to data packet
+      keyName = nameUri;
+      itr = keyToContentMap.find(nameUri);
+      contentName = itr->second;
   }
+
+  // if we've received both, we're done...
+  if (std::find(receivedNames.begin(), receivedNames.end(), contentName) != receivedNames.end() &&
+    std::find(receivedNames.begin(), receivedNames.end(), keyName) != receivedNames.end()) {
+
+        // search for the corresponding interest entry
+        for(std::vector<NameTime*>::iterator it = startTimes.begin(); it != startTimes.end(); ++it) {
+           NameTime *nt = *it;
+           std::string ntUri = nt->name.toUri();
+           if (ntUri == contentName) {
+               Name realContentName(contentName);
+               NameTime *nameRtt = new NameTime(realContentName, Simulator::Now());
+               nameRtt->name = contentObject->getName();
+               nameRtt->rtt = (Simulator::Now() - nt->rtt);
+
+               rtts.push_back(nameRtt);
+               m_receivedMeaningfulContent(this);
+
+               delete nt;
+               startTimes.erase(it); // drop it from the list, and go on with our lives
+
+               std::vector<std::string>::iterator citr = std::find(receivedNames.begin(), receivedNames.end(), contentName);
+               receivedNames.erase(citr);
+               std::vector<std::string>::iterator kitr = std::find(receivedNames.begin(), receivedNames.end(), keyName);
+               receivedNames.erase(kitr);
+
+               break;
+           }
+        }
+    }
 }
 
 void
@@ -174,41 +212,29 @@ AccountingEncrConsumer::SendPacket()
   while (m_retxSeqs.size()) {
     seq = *m_retxSeqs.begin();
     m_retxSeqs.erase(m_retxSeqs.begin());
-
-    // NS_ASSERT (m_seqLifetimes.find (seq) != m_seqLifetimes.end ());
-    // if (m_seqLifetimes.find (seq)->time <= Simulator::Now ())
-    //   {
-
-    //     NS_LOG_DEBUG ("Expire " << seq);
-    //     m_seqLifetimes.erase (seq); // lifetime expired. Trying to find another unexpired
-    //     sequence number
-    //     continue;
-    //   }
     NS_LOG_DEBUG("=interest seq " << seq << " from m_retxSeqs");
     break;
   }
 
-  if (seq == std::numeric_limits<uint32_t>::max()) // no retransmission
-  {
-    if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
-      if (m_seq >= m_seqMax) {
-        return; // we are totally done
-      }
-    }
-
-    seq = AccountingEncrConsumer::GetNextSeq();
-    m_seq++;
-  }
-
-  // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << seq << "\n";
+  seq = m_seq++; // always be increasing
 
   shared_ptr<Name> keyName = make_shared<Name>(m_interestName);
-  keyName->append("key"); // add the key annotation to this guy
+  keyName->append("key"); // add the key annotation
+  keyName->appendSequenceNumber(seq);
+  seq = m_seq++;
+
+  // the key has to be sufficiently unique to go all the way to the producer...
+  keyName->appendNumber(m_rand.GetValue());
+  keyName->appendNumber(m_rand.GetValue());
+  char randomString[32] = {0};
+  for(unsigned int i = 0; i < 32; ++i)
+  {
+    randomString[i] = randomChar1();
+  }
+  keyName->append(randomString);
 
   shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
   nameWithSequence->appendSequenceNumber(seq);
-  m_seq++;
-  keyName->appendSequenceNumber(seq);
 
   shared_ptr<Interest> interest = make_shared<Interest>();
   shared_ptr<Interest> keyInterest = make_shared<Interest>();
@@ -251,6 +277,11 @@ AccountingEncrConsumer::SendPacket()
   m_transmittedInterests(keyInterest, this, m_face);
   m_face->onReceiveInterest(*interest);
   m_face->onReceiveInterest(*keyInterest);
+
+  NameTime *nt = new NameTime(interest->getName(), Simulator::Now());
+  startTimes.push_back(nt);
+  keyToContentMap.insert(std::pair<std::string, std::string>(keyName->toUri(), nameWithSequence->toUri()));
+  contentToKeyMap.insert(std::pair<std::string, std::string>(nameWithSequence->toUri(), keyName->toUri()));
 
   AccountingEncrConsumer::ScheduleNextPacket();
   AccountingEncrConsumer::ScheduleNextPacket();

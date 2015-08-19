@@ -88,6 +88,10 @@ private:
   // Meaningful content retrieval trace callback
   TracedCallback<Ptr<AccountingEncrConsumer>> m_receivedMeaningfulContent;
 
+  std::map<std::string, std::string> keyToContentMap;
+  std::map<std::string, std::string> contentToKeyMap;
+  std::vector<std::string> receivedNames;
+
 };
 
 } // namespace ndn
