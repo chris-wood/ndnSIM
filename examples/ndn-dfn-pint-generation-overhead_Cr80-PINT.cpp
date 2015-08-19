@@ -28,6 +28,19 @@ using namespace std::chrono;
 #define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr80-PINT"
 #define SIMULATION_DURATION 3000.0 // real-time?
 
+#include "../apps/accounting-consumer.hpp"
+#include "../apps/ndn-consumer-cbr.hpp"
+
+void
+ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
+{
+    std::cout << "CALLBACK" << std::endl;
+    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
+        ns3::ndn::NameTime *nt = *it;
+        std::cout << "\t" << nt->name << ", RTT: " << nt->rtt << std::endl;
+    }
+}
+
 namespace ns3 {
   ofstream delayFile;
 
@@ -164,7 +177,7 @@ namespace ns3 {
     ndn::StackHelper ndnHelperNoCache;
     ndnHelperNoCache.SetDefaultRoutes(true);
     ndnHelperNoCache.SetOldContentStore("ns3::ndn::cs::Nocache"); // no cache
-    
+
     // Install on consumers and producer
     for (int i = 0; i < NUM_OF_CONSUMERS; i++) {
       ndnHelperNoCache.Install(nodes.Get(i));
@@ -175,7 +188,7 @@ namespace ns3 {
     ndn::StackHelper ndnHelperWithCache;
     ndnHelperWithCache.SetDefaultRoutes(true);
     ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "0"); // no max size
-    
+
     // Install on routers
     for (int i = NUM_OF_CONSUMERS; i < NUM_OF_CONSUMERS + NUM_OF_ROUTERS; i++) {
       ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, USE_PINT);
@@ -220,7 +233,7 @@ namespace ns3 {
 
 int
 main(int argc, char* argv[])
-{ 
+{
   //LogComponentEnable ("nfd.Forwarder", ns3::LOG_LEVEL_DEBUG);
   return ns3::run(argc, argv);
 }

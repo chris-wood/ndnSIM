@@ -18,6 +18,19 @@ using namespace std::chrono;
 #define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr80-PINT"
 #define SIMULATION_DURATION 5.0 // real-time?
 
+#include "../apps/accounting-consumer.hpp"
+#include "../apps/ndn-consumer-cbr.hpp"
+
+void
+ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
+{
+    std::cout << "CALLBACK" << std::endl;
+    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
+        ns3::ndn::NameTime *nt = *it;
+        std::cout << "\t" << nt->name << ", RTT: " << nt->rtt << std::endl;
+    }
+}
+
 namespace ns3 {
   ofstream delayFile;
 
@@ -26,6 +39,13 @@ namespace ns3 {
   {
     delayFile << eventTime.GetNanoSeconds() << "\t" << delay * 1000000000 << "\n";
   }
+
+  // void
+  //   ReceivedMeaningfulContent (std::string context, Ptr<ns3::ndn::ContentObject const> content, ns3::Time stoppingTime)
+  //   {
+  //     stoppingMicroSeconds[stoppedConsumerCount] += stoppingTime.GetMicroSeconds();
+  //     stoppedConsumerCount++;
+  //   }
 
   int
   run(int argc, char* argv[])
@@ -78,6 +98,11 @@ namespace ns3 {
     for (int i = 0; i < NUM_CONSUMERS; i++) {
       consumerHelperHonest.SetAttribute("ConsumerID", IntegerValue(i));
       ApplicationContainer consumer = consumerHelperHonest.Install(nodes.Get(i));
+
+      std::ostringstream node_id;
+      node_id << i;
+      Config::ConnectWithoutContext("/NodeList/" + node_id.str() + "/ApplicationList/0/ReceivedMeaningfulContent", MakeCallback(ReceivedMeaningfulContent));
+    //   ConnectWithoutContext
     }
 
     // Producer

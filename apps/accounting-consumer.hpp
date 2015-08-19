@@ -89,6 +89,10 @@ private:
   uint64_t receiveCount;
 
   UniformVariable m_SeqRng; // RNG
+  std::vector<NameTime*> startTimes;
+
+  // Meaningful content retrieval trace callback
+  TracedCallback<Ptr<AccountingConsumer>> m_receivedMeaningfulContent;
 
 };
 

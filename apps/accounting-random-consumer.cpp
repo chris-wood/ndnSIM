@@ -61,7 +61,10 @@ AccountingRandomConsumer::GetTypeId(void)
       .AddAttribute("s", "parameter of power", StringValue("0.7"),
                     MakeDoubleAccessor(&AccountingRandomConsumer::SetS,
                                        &AccountingRandomConsumer::GetS),
-                    MakeDoubleChecker<double>());
+                    MakeDoubleChecker<double>())
+
+      .AddTraceSource("ReceivedMeaningfulContent", "Trace called every time meaningful content is received",
+                   MakeTraceSourceAccessor(&AccountingRandomConsumer::m_receivedMeaningfulContent));
 
   return tid;
 }
@@ -136,6 +139,23 @@ AccountingRandomConsumer::OnData(shared_ptr<const Data> contentObject)
 {
   Consumer::OnData(contentObject); // default receive logic
   receiveCount++;
+
+  for(std::vector<NameTime*>::iterator it = startTimes.begin(); it != startTimes.end(); ++it) {
+     NameTime *nt = *it;
+     if (nt->name == contentObject->getName()) {
+         NameTime *nameRtt = new NameTime(contentObject->getName(), Simulator::Now());;
+         nameRtt->name = contentObject->getName();
+         nameRtt->rtt = (Simulator::Now() - nt->rtt);
+
+         rtts.push_back(nameRtt);
+         m_receivedMeaningfulContent(this);
+
+         delete nt;
+         startTimes.erase(it); // drop it from the list, and go on with our lives
+
+         break;
+     }
+  }
 }
 
 void

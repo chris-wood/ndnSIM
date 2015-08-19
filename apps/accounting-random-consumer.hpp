@@ -40,6 +40,8 @@ public:
   AccountingRandomConsumer();
   ~AccountingRandomConsumer();
 
+  std::vector<NameTime*> startTimes;
+
 protected:
 
   virtual void
@@ -83,9 +85,12 @@ private:
 
   UniformVariable m_SeqRng; // RNG
 
+  // Meaningful content retrieval trace callback
+  TracedCallback<Ptr<AccountingRandomConsumer>> m_receivedMeaningfulContent;
+
 };
 
 } // namespace ndn
 } // namespace ns3
- 
+
 #endif // NDN_ACCOUNTING_RANDOM_CONSUMER_H

@@ -27,6 +27,17 @@
 namespace ns3 {
 namespace ndn {
 
+struct NameTime {
+  NameTime(Name _name, Time _time)
+    : name(_name), rtt(_time)
+  {
+  }
+
+  Name name;
+  Time rtt;
+};
+
+
 /**
  * @ingroup ndn-apps
  * @brief Ndn application for sending out Interest packets at a "constant" rate (Poisson process)
@@ -42,6 +53,8 @@ public:
    */
   ConsumerCbr();
   virtual ~ConsumerCbr();
+
+  std::vector<NameTime*> rtts;
 
 protected:
   /**

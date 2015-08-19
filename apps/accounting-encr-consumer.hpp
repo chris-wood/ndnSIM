@@ -40,6 +40,8 @@ public:
   AccountingEncrConsumer();
   ~AccountingEncrConsumer();
 
+  std::vector<NameTime*> startTimes;
+
 protected:
 
   virtual void
@@ -82,6 +84,9 @@ private:
   uint64_t receiveCount;
 
   UniformVariable m_SeqRng; // RNG
+
+  // Meaningful content retrieval trace callback
+  TracedCallback<Ptr<AccountingEncrConsumer>> m_receivedMeaningfulContent;
 
 };
 

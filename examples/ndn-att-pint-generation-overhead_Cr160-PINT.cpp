@@ -22,6 +22,19 @@ using namespace std::chrono;
 #define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr160-PINT"
 #define SIMULATION_DURATION 1000.0
 
+#include "../apps/accounting-consumer.hpp"
+#include "../apps/ndn-consumer-cbr.hpp"
+
+void
+ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
+{
+    std::cout << "CALLBACK" << std::endl;
+    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
+        ns3::ndn::NameTime *nt = *it;
+        std::cout << "\t" << nt->name << ", RTT: " << nt->rtt << std::endl;
+    }
+}
+
 namespace ns3 {
   ofstream delayFile;
 
@@ -157,7 +170,7 @@ namespace ns3 {
     // 36 done
     // 37 done
     // 38 done
-    // 39 done 
+    // 39 done
     // 40 done
     // 41 done
 
