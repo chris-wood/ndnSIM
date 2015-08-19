@@ -82,51 +82,10 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     return;
   }
 
-  if (interest.getIsPint() == 1) { // pInt is already set... forward, no PIT state, done.
-    //   shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(interest.getName());
-    //   const fib::NextHopList& nexthops = fibEntry->getNextHops();
-    //   fib::NextHopList::const_iterator it = nexthops.begin(); // pick the first outgoing face
-      //
-    //   while (it != nexthops.end()) {
-    //     shared_ptr<Face> face = it->getFace();
-    //     if (!face->isLocal() && face->getId() != inFace.getId()) {  // pitEntry->canForwardTo(*face) &&
-    //         shared_ptr<Interest> pInt = make_shared<Interest>(interest.getName());
-    //         pInt->setIsPint(1);
-    //         pInt->setPayload(interest.getPayload());
-    //         pInt->getNonce();
-    //         pInt->setInterestLifetime(time::milliseconds(10000));
-    //         pInt->setNextHopFaceId(it->getFace()->getId());
-      //
-    //         face->sendInterest(*pInt);
-    //         ++m_counters.getNOutInterests();
-    //     }
-    //     it++;
-    //   }
-  }
-
-  // PIT insert (if pInt)
-  // shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
-  //
-  // // detect duplicate Nonce
-  // int dnw = pitEntry->findNonce(interest.getNonce(), inFace);
-  // bool hasDuplicateNonce = (dnw != pit::DUPLICATE_NONCE_NONE) ||
-  //   m_deadNonceList.has(interest.getName(), interest.getNonce());
-  // if (hasDuplicateNonce) {
-  //   // goto Interest loop pipeline
-  //   this->onInterestLoop(inFace, interest, pitEntry);
-  //   return;
-  // }
-  // m_pit.erase(pitEntry);
-
-  //if (m_forwardingDelayCallback != 0)
-  //  std::cout << "interest is received by router" << std::endl;
-
-  // cancel unsatisfy & straggler timer
-  // this->cancelUnsatisfyAndStragglerTimer(pitEntry);
-
   // is pending?
   // const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
-  bool isPending = false; // inRecords.begin() != inRecords.end();
+  // inRecords.begin() != inRecords.end();
+  bool isPending = false;
   if (!isPending) {
     // CS lookup
     const Data* csMatch;
@@ -169,6 +128,19 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       // invoke PIT satisfy callback
       if (interest.getIsPint() == 0) {
           shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
+
+          // detect duplicate Nonce
+          int dnw = pitEntry->findNonce(interest.getNonce(), inFace);
+          bool hasDuplicateNonce = (dnw != pit::DUPLICATE_NONCE_NONE) ||
+            m_deadNonceList.has(interest.getName(), interest.getNonce());
+          if (hasDuplicateNonce) {
+            // goto Interest loop pipeline
+            this->onInterestLoop(inFace, interest, pitEntry);
+            return;
+          }
+
+          this->cancelUnsatisfyAndStragglerTimer(pitEntry);
+
           beforeSatisfyInterest(*pitEntry, *m_csFace, *csMatch);
           this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,
                                           pitEntry, cref(*m_csFace), cref(*csMatch)));

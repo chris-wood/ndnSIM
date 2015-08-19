@@ -14,8 +14,8 @@ using namespace std::chrono;
 #define NUM_ROUTERS 2
 #define NUM_PRODUCER 1
 
-#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr80-PINT"
-#define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr80-PINT"
+#define DELAY_OUTPUT_FILE_NAME "simple-delay"
+#define RATE_OUTPUT_FILE_NAME "simple-rate"
 #define SIMULATION_DURATION 5.0 // real-time?
 
 #include "../apps/accounting-consumer.hpp"
