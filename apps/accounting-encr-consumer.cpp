@@ -56,7 +56,9 @@ AccountingEncrConsumer::GetTypeId(void)
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
       .AddConstructor<AccountingEncrConsumer>()
-
+      .AddAttribute("ConsumerID", "Consumer ID",
+                    IntegerValue(std::numeric_limits<uint32_t>::max()),
+                    MakeIntegerAccessor(&AccountingEncrConsumer::m_id), MakeIntegerChecker<uint32_t>())
       .AddAttribute("NumberOfContents", "Number of the Contents in total", StringValue("100"),
                     MakeUintegerAccessor(&AccountingEncrConsumer::SetNumberOfContents,
                                          &AccountingEncrConsumer::GetNumberOfContents),
