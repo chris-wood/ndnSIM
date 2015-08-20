@@ -231,8 +231,8 @@ AccountingConsumer::SendPacket()
   m_transmittedInterests(interest, this, m_face);
   m_face->onReceiveInterest(*interest);
 
-  NameTime *nt = new NameTime(interest->getName(), Simulator::Now());
-  startTimes.push_back(nt);
+  // NameTime *nt = new NameTime(interest->getName(), Simulator::Now());
+  // startTimes.push_back(nt);
 
   AccountingConsumer::ScheduleNextPacket();
   sentCount++;

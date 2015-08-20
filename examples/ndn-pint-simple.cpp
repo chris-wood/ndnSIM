@@ -16,7 +16,7 @@ using namespace std::chrono;
 
 #define DELAY_OUTPUT_FILE_NAME "simple-delay"
 #define RATE_OUTPUT_FILE_NAME "simple-rate"
-#define SIMULATION_DURATION 5.0 // real-time?
+#define SIMULATION_DURATION 1000 // real-time?
 
 #include "../apps/accounting-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
@@ -24,11 +24,11 @@ using namespace std::chrono;
 void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
 {
-    std::cout << "CALLBACK" << std::endl;
-    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
-        ns3::ndn::NameTime *nt = *it;
-        std::cout << "\t" << nt->name << ", RTT: " << nt->rtt << std::endl;
-    }
+    // std::cout << "CALLBACK" << std::endl;
+    // for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
+    //     ns3::ndn::NameTime *nt = *it;
+    //     std::cout << "\t" << nt->name << ", RTT: " << nt->rtt << std::endl;
+    // }
 }
 
 namespace ns3 {

@@ -83,8 +83,6 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
   }
 
   // is pending?
-  // const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
-  // inRecords.begin() != inRecords.end();
   bool isPending = false;
   if (!isPending) {
     // CS lookup
@@ -104,23 +102,21 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
         fib::NextHopList::const_iterator it = nexthops.begin(); // pick the first outgoing face
 
         while (it != nexthops.end()) {
-          shared_ptr<Face> face = it->getFace();
+            shared_ptr<Face> face = it->getFace();
           if (!face->isLocal() && face->getId() != inFace.getId()) {
               shared_ptr<Interest> pInt = make_shared<Interest>(interest.getName());
               pInt->setIsPint(1);
               pInt->setPayload(interest.getPayload());
-              pInt->setNonce(interest.getNonce());
+              pInt->getNonce();
               pInt->setNextHopFaceId(it->getFace()->getId());
-
+              pInt->setInterestLifetime(time::milliseconds(10000));
               face->sendInterest(*pInt);
               ++m_counters.getNOutInterests();
+              break;
           }
           it++;
         }
       }
-
-      //if (m_forwardingDelayCallback != 0)
-      //  std::cout << "Cache hit" << std::endl;
 
       // invoke PIT satisfy callback
       if (interest.getIsPint() == 0) {
@@ -160,7 +156,7 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
     }
 
     //if (m_forwardingDelayCallback != 0)
-    //  std::cout << "Cache miss" << std::endl;
+    // std::cout << "Cache miss" << std::endl;
 
     // insert PIT entry and then InRecord
     shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
