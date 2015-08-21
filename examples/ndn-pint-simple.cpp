@@ -10,13 +10,13 @@
 using namespace std;
 using namespace std::chrono;
 
-#define NUM_CONSUMERS 1
+#define NUM_CONSUMERS 2
 #define NUM_ROUTERS 2
 #define NUM_PRODUCER 1
 
 #define DELAY_OUTPUT_FILE_NAME "simple-delay"
 #define RATE_OUTPUT_FILE_NAME "simple-rate"
-#define SIMULATION_DURATION 1000 // real-time?
+#define SIMULATION_DURATION 5 // real-time?
 
 #include "../apps/accounting-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
