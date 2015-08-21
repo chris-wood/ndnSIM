@@ -65,7 +65,7 @@ public:
   Install(Ptr<Node> node, const Name& namePrefix, const Name& strategy);
 
   static void
-  InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback);
+  InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback, size_t id);
 
   static void
   InstallAll(const Name& namePrefix, const Name& strategy);
@@ -80,7 +80,7 @@ public:
 
   template<class Strategy>
   static void
-  InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback);
+  InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback, size_t id);
 
   template<class Strategy>
   static void
@@ -111,14 +111,14 @@ StrategyChoiceHelper::Install(Ptr<Node> node, const Name& namePrefix)
 
 template<class Strategy>
 inline void
-StrategyChoiceHelper::InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback)
+StrategyChoiceHelper::InstallWithCallback(Ptr<Node> node, const Name& namePrefix, size_t forwardingDelayCallback, size_t id)
 {
   Ptr<L3Protocol> l3Protocol = node->GetObject<L3Protocol>();
   NS_ASSERT(l3Protocol != nullptr);
   NS_ASSERT(l3Protocol->getForwarder() != nullptr);
 
   nfd::Forwarder& forwarder = *l3Protocol->getForwarder();
-  forwarder.setForwardingDelayCallback(forwardingDelayCallback);
+  forwarder.setForwardingDelayCallback(forwardingDelayCallback, id);
   nfd::StrategyChoice& strategyChoice = forwarder.getStrategyChoice();
 
   if (!strategyChoice.hasStrategy(Strategy::STRATEGY_NAME)) {

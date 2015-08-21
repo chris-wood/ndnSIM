@@ -177,27 +177,27 @@ StackHelper::Install(Ptr<Node> node) const
 }
 
 Ptr<FaceContainer>
-StackHelper::InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback) const
+StackHelper::InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback, size_t id) const
 {
   Ptr<FaceContainer> faces = Install(node);
 
   // Set the ForwardingDelay callback
   Ptr<L3Protocol> l3Protocol = node->GetObject<L3Protocol>();
   nfd::Forwarder& forwarder = *l3Protocol->getForwarder();
-  forwarder.setForwardingDelayCallback(forwardingDelayCallback);
+  forwarder.setForwardingDelayCallback(forwardingDelayCallback, id);
 
   return faces;
 }
 
 Ptr<FaceContainer>
-StackHelper::InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback, bool usePint) const
+StackHelper::InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback, size_t id, bool usePint) const
 {
   Ptr<FaceContainer> faces = Install(node);
 
   // Set the ForwardingDelay callback
   Ptr<L3Protocol> l3Protocol = node->GetObject<L3Protocol>();
   nfd::Forwarder& forwarder = *l3Protocol->getForwarder();
-  forwarder.setForwardingDelayCallback(forwardingDelayCallback);
+  forwarder.setForwardingDelayCallback(forwardingDelayCallback, id);
   forwarder.setUsePint(usePint);
 
   return faces;

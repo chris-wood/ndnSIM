@@ -150,10 +150,10 @@ public:
   Install(Ptr<Node> node) const;
 
   Ptr<FaceContainer>
-  InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback) const;
+  InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback, size_t id) const;
 
   Ptr<FaceContainer>
-  InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback, bool usePint) const;
+  InstallWithCallback(Ptr<Node> node, size_t forwardingDelayCallback, size_t id, bool usePint) const;
 
   /**
    * \brief Install Ndn stack on each node in the input container

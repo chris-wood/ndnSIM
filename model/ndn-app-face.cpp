@@ -56,6 +56,7 @@ AppFace::close()
 void
 AppFace::sendInterest(const Interest& interest)
 {
+    // std::cout << "SENDING FROM APP FACE MOFO" << std::endl;
   NS_LOG_FUNCTION(this << &interest);
 
   this->onSendInterest(interest);

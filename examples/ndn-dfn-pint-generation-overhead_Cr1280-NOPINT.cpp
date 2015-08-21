@@ -189,7 +189,7 @@ namespace ns3 {
     ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "0");
     // Install on routers
     for (int i = NUM_OF_CONSUMERS; i < NUM_OF_CONSUMERS + NUM_OF_ROUTERS; i++) {
-      ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, USE_PINT);
+      ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, i, USE_PINT);
     }
 
         // Consumers

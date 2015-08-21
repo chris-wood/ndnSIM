@@ -94,6 +94,7 @@ NetDeviceFace::sendInterest(const Interest& interest)
 {
   NS_LOG_FUNCTION(this << &interest);
 
+  // std::cout << "!!!!>>>>> sending FROM NET FACE" << std::endl;
   this->onSendInterest(interest);
 
   Ptr<Packet> packet = Convert::ToPacket(interest);

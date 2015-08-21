@@ -109,7 +109,7 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
   uint64_t isPint = interest->getIsPint();
 
   if (isPint == 0) {
-    std::cout << "> Producer received interest " << interest->getName() << std::endl;
+    // std::cout << "> Producer received interest " << interest->getName() << std::endl;
 
     Name dataName(interest->getName());
     // dataName.append(m_postfix);
@@ -142,7 +142,7 @@ AccountingProducer::OnInterest(shared_ptr<const Interest> interest)
     m_face->onReceiveData(*data);
   } else {
 
-    std::cout << ">>>>> Producer received pint " << interest->getName() << std::endl;
+    // std::cout << ">>>>> Producer received pint " << interest->getName() << std::endl;
     receivedPints++;
     std::vector<uint64_t> payload = interest->getPayload();
 

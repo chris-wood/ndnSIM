@@ -68,7 +68,7 @@ public:
   getCounters() const;
 
   void
-  setForwardingDelayCallback(size_t forwardingDelayCallback);
+  setForwardingDelayCallback(size_t forwardingDelayCallback, size_t id);
 
   void
   setUsePint(bool usePint);
@@ -138,12 +138,12 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
   /** \brief incoming Interest pipeline
    */
   VIRTUAL_WITH_TESTS void
-  onIncomingInterest(Face& inFace, const Interest& interest);
+  onIncomingInterest(Face& inFace, Interest& interest);
 
   /** \brief Interest loop pipeline
    */
   VIRTUAL_WITH_TESTS void
-  onInterestLoop(Face& inFace, const Interest& interest,
+  onInterestLoop(Face& inFace, Interest& interest,
                  shared_ptr<pit::Entry> pitEntry);
 
   /** \brief outgoing Interest pipeline
@@ -220,6 +220,9 @@ private:
 
   FaceTable m_faceTable;
 
+  size_t m_id; // set...
+  std::vector<uint32_t> noncesSeen;
+
   // tables
   NameTree       m_nameTree;
   Fib            m_fib;
@@ -268,7 +271,7 @@ Forwarder::addFace(shared_ptr<Face> face)
 inline void
 Forwarder::onInterest(Face& face, const Interest& interest)
 {
-  this->onIncomingInterest(face, interest);
+  this->onIncomingInterest(face, const_cast<Interest&>(interest));
 }
 
 inline void
@@ -326,8 +329,9 @@ Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs)
 }
 
 inline void
-Forwarder::setForwardingDelayCallback(size_t forwardingDelayCallback)
+Forwarder::setForwardingDelayCallback(size_t forwardingDelayCallback, size_t id)
 {
+  m_id = id;
   m_forwardingDelayCallback = reinterpret_cast<ForwardingDelayCallback>(forwardingDelayCallback);
 }
 

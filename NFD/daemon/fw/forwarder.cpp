@@ -28,6 +28,7 @@
 #include "core/random.hpp"
 #include "face/null-face.hpp"
 #include "available-strategies.hpp"
+#include <algorithm>
 
 #include <boost/random/uniform_int_distribution.hpp>
 
@@ -58,16 +59,21 @@ Forwarder::~Forwarder()
 }
 
 void
-Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
+Forwarder::onIncomingInterest(Face& inFace, Interest& interest)
 {
-  if (interest.getIsPint() == 1 && m_forwardingDelayCallback != 0)
-    std::cout << "##### router receives pint" << std::endl;
+  // if (interest.getIsPint() == 1 && m_forwardingDelayCallback != 0) {
+  //     std::cout << "##### router " << m_id << " receives pint" << interest.getNonce() << std::endl;
+  // }
 
   // If the router doesn't implement pInts and one is received, drop it.
   if (m_usePint == false && interest.getIsPint() == 1)
     return;
 
   auto start = std::chrono::high_resolution_clock::now();
+
+  if (std::find(noncesSeen.begin(), noncesSeen.end(), interest.getNonce()) != noncesSeen.end()) {
+      return;
+  }
 
   // receive Interest
   NFD_LOG_DEBUG("onIncomingInterest face=" << inFace.getId() <<
@@ -105,8 +111,12 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
   const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
   bool isPending = inRecords.begin() != inRecords.end();
   // If it's a pInt, just don't get inside the next if no mater what.
+
+  bool cacheHit = false;
+
   if (interest.getIsPint() == 1)
     isPending = true;
+
   if (!isPending) {
     // CS lookup
     const Data* csMatch;
@@ -118,29 +128,6 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       csMatch = match.get();
     }
     if (csMatch != 0) {
-      if (m_usePint) {
-        shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(interest.getName());
-        const fib::NextHopList& nexthops = fibEntry->getNextHops();
-        fib::NextHopList::const_iterator it = nexthops.begin();
-        while (it != nexthops.end()) {
-          shared_ptr<Face> face = it->getFace();
-          std::cout << "&&&&&& face id: " << face->getId() << std::endl;
-          if (!face->isLocal() && face->getId() != inFace.getId()) {
-            shared_ptr<Interest> pInt = make_shared<Interest>(interest.getName());
-            pInt->setIsPint(1);
-            pInt->setPayload(interest.getPayload());
-            pInt->getNonce();
-            //pInt->setNextHopFaceId(it->getFace()->getId());
-            pInt->setInterestLifetime(time::milliseconds(10000));
-            std::cout << "****** router is sending pint out of face " << face->getId() << std::endl;
-            face->sendInterest(*pInt);
-            ++m_counters.getNOutInterests();
-            break;
-          }
-          it++;
-        }
-      }
-
       const_cast<Data*>(csMatch)->setIncomingFaceId(FACEID_CONTENT_STORE);
       // XXX should we lookup PIT for other Interests that also match csMatch?
 
@@ -149,7 +136,7 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
       this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,
                                               pitEntry, cref(*m_csFace), cref(*csMatch)));
       // set PIT straggler timer
-      this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
+    //   this->setStragglerTimer(pitEntry, true, csMatch->getFreshnessPeriod());
 
       // goto outgoing Data pipeline
       this->onOutgoingData(*csMatch, inFace);
@@ -164,26 +151,34 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
         m_forwardingDelayCallback(ns3::Simulator::Now(), duration.count());
       }
 
-      return;
+      cacheHit = true;
     }
   }
 
-  // insert InRecord
-  pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
+    if (cacheHit) { // mark as pInt, forward along mang
+        interest.setIsPint(1);
+    }
 
-  // set PIT unsatisfy timer
-  this->setUnsatisfyTimer(pitEntry);
+      // insert InRecord
+      pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
 
-  // FIB lookup
-  shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+      // set PIT unsatisfy timer
+      this->setUnsatisfyTimer(pitEntry);
 
-  // dispatch to strategy
-  this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
-                                          cref(inFace), cref(interest), fibEntry, pitEntry));
+      // FIB lookup
+      shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+    //   if (interest.getIsPint() && m_usePint) {
+        //   std::cout << "****** ROUTER << " << m_id << " FORWARDS PINT " << interest.getNonce() << std::endl;
+    //   }
+
+      // dispatch to strategy
+      this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+                                              cref(inFace), cref(interest), fibEntry, pitEntry));
 }
 
 void
-Forwarder::onInterestLoop(Face& inFace, const Interest& interest,
+Forwarder::onInterestLoop(Face& inFace, Interest& interest,
                           shared_ptr<pit::Entry> pitEntry)
 {
   NFD_LOG_DEBUG("onInterestLoop face=" << inFace.getId() <<

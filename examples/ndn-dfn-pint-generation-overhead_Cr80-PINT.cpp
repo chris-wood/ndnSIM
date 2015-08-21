@@ -191,7 +191,7 @@ namespace ns3 {
 
     // Install on routers
     for (int i = NUM_OF_CONSUMERS; i < NUM_OF_CONSUMERS + NUM_OF_ROUTERS; i++) {
-      ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, USE_PINT);
+      ndnHelperWithCache.InstallWithCallback(nodes.Get(i), (size_t)&ForwardingDelay, i, USE_PINT);
     }
 
     // Consumers
