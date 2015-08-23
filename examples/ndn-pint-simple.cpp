@@ -11,12 +11,12 @@ using namespace std;
 using namespace std::chrono;
 
 #define NUM_CONSUMERS 2
-#define NUM_ROUTERS 3
+#define NUM_ROUTERS 2
 #define NUM_PRODUCER 1
 
 #define DELAY_OUTPUT_FILE_NAME "simple-delay"
 #define RATE_OUTPUT_FILE_NAME "simple-rate"
-#define SIMULATION_DURATION 5 // real-time?
+#define SIMULATION_DURATION 10 // real-time?
 
 #include "../apps/accounting-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
@@ -70,10 +70,10 @@ namespace ns3 {
     for (int i = 0; i < NUM_CONSUMERS; i++) {
       p2p.Install(nodes.Get (i), nodes.Get (NUM_CONSUMERS + 0)); // Cr <-> R
     }
-    p2p.Install(nodes.Get (NUM_CONSUMERS + 0), nodes.Get (NUM_CONSUMERS + 1)); // R1 <-> R2
-    p2p.Install(nodes.Get (NUM_CONSUMERS + 1), nodes.Get (NUM_CONSUMERS + 2)); // R2 <-> P
-    p2p.Install(nodes.Get (NUM_CONSUMERS + 2), nodes.Get (NUM_CONSUMERS + NUM_ROUTERS + 0)); // R2 <-> P
-    // p2p.Install(nodes.Get (NUM_CONSUMERS + 0), nodes.Get (NUM_CONSUMERS + NUM_ROUTERS + 0)); // R2 <-> P
+    for (int i = 0; i < NUM_ROUTERS - 1; i++) {
+      p2p.Install(nodes.Get (NUM_CONSUMERS + i), nodes.Get (NUM_CONSUMERS + i + 1)); // Ri <-> R(i+1)
+    }
+    p2p.Install(nodes.Get (NUM_CONSUMERS + NUM_ROUTERS - 1), nodes.Get (NUM_CONSUMERS + NUM_ROUTERS + 0)); // last router <-> P
 
     // Install NDN stack without cache on consumers
     ndn::StackHelper ndnHelperNoCache;
@@ -88,9 +88,11 @@ namespace ns3 {
     ndn::StackHelper ndnHelperWithCache;
     ndnHelperWithCache.SetDefaultRoutes(true);
     ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000"); // no max size
-    ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 0), (size_t)&ForwardingDelay, 0, true);
-    ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 1), (size_t)&ForwardingDelay, 1, true);
-    ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 2), (size_t)&ForwardingDelay, 2, true);
+    for (int i = 0; i < NUM_ROUTERS; i++) {
+      ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + i), (size_t)&ForwardingDelay, i, true);
+    }
+    //ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 1), (size_t)&ForwardingDelay, 1, true);
+    //ndnHelperWithCache.InstallWithCallback(nodes.Get(NUM_CONSUMERS + 2), (size_t)&ForwardingDelay, 2, true);
 
     ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
     consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second

@@ -171,8 +171,8 @@ AccountingConsumer::OnData(shared_ptr<const Data> contentObject)
      }
   }
 
-  // std::cout << "> Consumer(" << m_id << ") got data back with name "
-  //           << contentObject->getName() << std::endl;
+  //std::cout << "> Consumer(" << m_id << ") got data back with name "
+  //          << contentObject->getName() << std::endl;
 }
 
 void
@@ -234,8 +234,8 @@ AccountingConsumer::SendPacket()
   AccountingConsumer::ScheduleNextPacket();
   sentCount++;
 
-  // std::cout << "> Consumer(" << GetNode()->GetId() << ") is sending interest, "
-            // << nameWithSequence->toUri() << interest->getNonce() << std::endl;
+  //std::cout << "> Consumer(" << GetNode()->GetId() << ") is sending interest, "
+  //          << nameWithSequence->toUri() << " and nonce " << interest->getNonce() << std::endl;
 }
 
 uint32_t
