@@ -22,11 +22,11 @@ using namespace std::chrono;
 #define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr320-NOPINT"
 #define SIMULATION_DURATION 1000.0
 
-#include "../apps/accounting-random-consumer.hpp"
+#include "../apps/accounting-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
 
 void
-ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingRandomConsumer> consumer)
+ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
 {
     std::cout << "CALLBACK" << std::endl;
     for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
@@ -202,7 +202,7 @@ namespace ns3 {
     }
 
     // Consumers
-    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingRandomConsumer");
+    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
     consumerHelperHonest.SetAttribute("Frequency", StringValue("10")); // 10 interests a second
     consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
     consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
@@ -215,7 +215,7 @@ namespace ns3 {
 
     // Producer
     // Producer will reply to all requests starting with /prefix/A
-    ndn::AppHelper producerHelper("ns3::ndn::AccountingRandomProducer");
+    ndn::AppHelper producerHelper("ns3::ndn::AccountingProducer");
     producerHelper.SetPrefix("/prefix/A");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
     producerHelper.Install(nodes.Get(producerId));
