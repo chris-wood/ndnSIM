@@ -25,14 +25,12 @@ using namespace std::chrono;
 #include "../apps/accounting-encr-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
 
+vector<ns3::ndn::NameTime> rtts;
+
 void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingEncrConsumer> consumer)
 {
-    std::cout << "CALLBACK" << std::endl;
-    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
-        ns3::ndn::NameTime *nt = *it;
-        std::cout << "\t" << nt->name << ", RTT: " << nt->rtt << std::endl;
-    }
+    rtts = consumer->rtts;
 }
 
 namespace ns3 {
@@ -236,5 +234,13 @@ namespace ns3 {
 int
 main(int argc, char* argv[])
 {
-  return ns3::run(argc, argv);
+  ns3::run(argc, argv);
+  // <event time> \t <RTT>
+  ofstream latencyFile;
+  latencyFile.open(LATENCY_OUTPUT_FILE_NAME);
+  for(std::vector<ns3::ndn::NameTime*>::iterator it = rtts.begin(); it != rtts.end(); ++it) {
+      ns3::ndn::NameTime *nt = *it;
+      latencyFile << nt->eventTime << "\t" << nt->rtt << std::endl;
+  }
+  latencyFile.close();
 }
