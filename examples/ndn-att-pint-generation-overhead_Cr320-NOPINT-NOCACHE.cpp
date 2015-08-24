@@ -23,10 +23,10 @@ using namespace std::chrono;
 #define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr320-NOPINT-NOCACHE"
 #define SIMULATION_DURATION 1000.0
 
-#include "../apps/accounting-consumer.hpp"
+#include "../apps/accounting-random-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
 
-vector<ns3::ndn::NameTime> rtts;
+std::vector<ns3::ndn::NameTime*> rtts;
 
 void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingRandomConsumer> consumer)

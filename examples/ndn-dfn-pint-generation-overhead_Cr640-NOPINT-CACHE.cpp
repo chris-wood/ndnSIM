@@ -32,7 +32,7 @@ using namespace std::chrono;
 #include "../apps/accounting-random-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
 
-vector<ns3::ndn::NameTime> rtts;
+std::vector<ns3::ndn::NameTime*> rtts;
 
 void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingRandomConsumer> consumer)

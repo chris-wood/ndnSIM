@@ -30,12 +30,13 @@ namespace ns3 {
 namespace ndn {
 
 class NameTime {
+
+public:
   NameTime(Name _name, Time _time, Time _eventTime)
     : name(_name), rtt(_time), eventTime(_eventTime)
   {
   }
 
-public:
   Name name;
   Time rtt;
   Time eventTime;
