@@ -18,7 +18,7 @@
 using namespace std;
 using namespace std::chrono;
 
-#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-latency-Cr160-NOPINTENCR"
+#define LATENCY_OUTPUT_FILE_NAME "att-pint-generation-overhead-latency-Cr160-NOPINTENCR"
 #define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr160-NOPINTENCR"
 #define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr160-NOPINTENCR"
 #define SIMULATION_DURATION 1000.0
@@ -31,7 +31,9 @@ vector<ns3::ndn::NameTime> rtts;
 void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingEncrConsumer> consumer)
 {
-    rtts = consumer->rtts;
+    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
+        rtts.push_back(*it);
+    }
 }
 
 namespace ns3 {

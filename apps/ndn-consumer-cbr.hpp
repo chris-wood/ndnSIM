@@ -29,15 +29,23 @@ static const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl
 namespace ns3 {
 namespace ndn {
 
-struct NameTime {
+class NameTime {
   NameTime(Name _name, Time _time, Time _eventTime)
     : name(_name), rtt(_time), eventTime(_eventTime)
   {
   }
 
+public:
   Name name;
   Time rtt;
   Time eventTime;
+
+  NameTime& operator=(const NameTime& other) {
+      name = other.name;
+      rtt = other.rtt;
+      eventTime = other.eventTime;
+      return *this;
+  }
 };
 
 /**

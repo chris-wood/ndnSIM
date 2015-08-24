@@ -153,7 +153,7 @@ AccountingRandomConsumer::OnData(shared_ptr<const Data> contentObject)
   for(std::vector<NameTime*>::iterator it = startTimes.begin(); it != startTimes.end(); ++it) {
      NameTime *nt = *it;
      if (nt->name == contentObject->getName()) {
-         NameTime *nameRtt = new NameTime(contentObject->getName(), Simulator::Now());;
+         NameTime *nameRtt = new NameTime(contentObject->getName(), Simulator::Now(), Simulator::Now());
          nameRtt->name = contentObject->getName();
          nameRtt->rtt = (Simulator::Now() - nt->rtt);
 
@@ -238,7 +238,7 @@ AccountingRandomConsumer::SendPacket()
   m_transmittedInterests(interest, this, m_face);
   m_face->onReceiveInterest(*interest);
 
-  NameTime *nt = new NameTime(interest->getName(), Simulator::Now());
+  NameTime *nt = new NameTime(interest->getName(), Simulator::Now(), Simulator::Now());
   startTimes.push_back(nt);
 
   AccountingRandomConsumer::ScheduleNextPacket();

@@ -178,7 +178,7 @@ AccountingEncrConsumer::OnData(shared_ptr<const Data> contentObject)
            std::string ntUri = nt->name.toUri();
            if (ntUri == contentName) {
                Name realContentName(contentName);
-               NameTime *nameRtt = new NameTime(realContentName, Simulator::Now());
+               NameTime *nameRtt = new NameTime(realContentName, Simulator::Now(), Simulator::Now());
                nameRtt->name = contentObject->getName();
                nameRtt->rtt = (Simulator::Now() - nt->rtt);
 
@@ -280,7 +280,7 @@ AccountingEncrConsumer::SendPacket()
   m_face->onReceiveInterest(*interest);
   m_face->onReceiveInterest(*keyInterest);
 
-  NameTime *nt = new NameTime(interest->getName(), Simulator::Now());
+  NameTime *nt = new NameTime(interest->getName(), Simulator::Now(), Simulator::Now());
   startTimes.push_back(nt);
   keyToContentMap.insert(std::pair<std::string, std::string>(keyName->toUri(), nameWithSequence->toUri()));
   contentToKeyMap.insert(std::pair<std::string, std::string>(nameWithSequence->toUri(), keyName->toUri()));
