@@ -32,11 +32,6 @@ void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
 {
     rtts = consumer->rtts;
-    std::cout << "CALLBACK" << std::endl;
-    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
-        ns3::ndn::NameTime *nt = *it;
-        std::cout << "\t" << nt->name << ", RTT: " << nt->rtt << std::endl;
-    }
 }
 
 namespace ns3 {
