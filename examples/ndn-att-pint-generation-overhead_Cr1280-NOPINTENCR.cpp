@@ -18,6 +18,7 @@
 using namespace std;
 using namespace std::chrono;
 
+#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-latency-Cr1280-NOPINTENCR"
 #define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr1280-NOPINTENCR"
 #define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr1280-NOPINTENCR"
 #define SIMULATION_DURATION 1000.0

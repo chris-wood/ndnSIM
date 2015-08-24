@@ -24,6 +24,7 @@ int outRouters[OUT_ROUTERS_COUNT] = {0, 1, 2, 3, 5, 6, 8, 10, 11, 12, 17, 18, 20
 using namespace std;
 using namespace std::chrono;
 
+#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-latency-Cr320-NOPINTENCR"
 #define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr320-NOPINTENCR"
 #define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr320-NOPINTENCR"
 #define SIMULATION_DURATION 1000.0
