@@ -206,6 +206,10 @@ namespace ns3 {
       ApplicationContainer consumer = consumerHelperHonest.Install(nodes.Get(i));
 
       consumer.Start(Seconds(0));
+
+      std::ostringstream node_id;
+      node_id << i;
+      Config::ConnectWithoutContext("/NodeList/" + node_id.str() + "/ApplicationList/0/ReceivedMeaningfulContent", MakeCallback(ReceivedMeaningfulContent));
     }
 
     // Producer
