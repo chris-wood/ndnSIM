@@ -24,8 +24,9 @@ int outRouters[OUT_ROUTERS_COUNT] = {0, 1, 2, 3, 5, 6, 8, 10, 11, 12, 17, 18, 20
 using namespace std;
 using namespace std::chrono;
 
-#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr1280-NOPINT"
-#define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr1280-NOPINT"
+#define LATENCY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-latency-Cr1280-NOPINT-CACHE"
+#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr1280-NOPINT-CACHE"
+#define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr1280-NOPINT-CACHE"
 #define SIMULATION_DURATION 1000.0
 
 #include "../apps/accounting-random-consumer.hpp"

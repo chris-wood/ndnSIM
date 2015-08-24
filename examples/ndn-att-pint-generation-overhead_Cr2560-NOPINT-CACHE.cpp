@@ -18,8 +18,9 @@
 using namespace std;
 using namespace std::chrono;
 
-#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr2560-NOPINT"
-#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr2560-NOPINT"
+#define LATENCY_OUTPUT_FILE_NAME "att-pint-generation-overhead-latency-Cr2560-NOPINT-CACHE"
+#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr2560-NOPINT-CACHE"
+#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr2560-NOPINT-CACHE"
 #define SIMULATION_DURATION 1000.0
 
 #include "../apps/accounting-consumer.hpp"

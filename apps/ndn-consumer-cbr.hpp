@@ -30,13 +30,14 @@ namespace ns3 {
 namespace ndn {
 
 struct NameTime {
-  NameTime(Name _name, Time _time)
-    : name(_name), rtt(_time)
+  NameTime(Name _name, Time _time, Time _eventTime)
+    : name(_name), rtt(_time), eventTime(_eventTime)
   {
   }
 
   Name name;
   Time rtt;
+  Time eventTime;
 };
 
 /**
