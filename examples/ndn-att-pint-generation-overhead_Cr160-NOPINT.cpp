@@ -18,6 +18,7 @@
 using namespace std;
 using namespace std::chrono;
 
+#define LATENCY_OUTPUT_FILE_NAME "att-pint-generation-overhead-latency-Cr160-NOPINT"
 #define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr160-NOPINT"
 #define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr160-NOPINT"
 #define SIMULATION_DURATION 1000.0
@@ -25,9 +26,12 @@ using namespace std::chrono;
 #include "../apps/accounting-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
 
+vector<ns3::ndn::NameTime> rtts;
+
 void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
 {
+    rtts = consumer->rtts;
     std::cout << "CALLBACK" << std::endl;
     for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
         ns3::ndn::NameTime *nt = *it;
@@ -236,5 +240,15 @@ namespace ns3 {
 int
 main(int argc, char* argv[])
 {
-  return ns3::run(argc, argv);
+  ns3::run(argc, argv);
+
+  // <event time> \t <RTT>
+  ofstream latencyFile;
+  latencyFile.open(LATENCY_OUTPUT_FILE_NAME);
+  for(std::vector<ns3::ndn::NameTime*>::iterator it = rtts.begin(); it != rtts.end(); ++it) {
+      ns3::ndn::NameTime *nt = *it;
+      latencyFile << nt->eventTime << "\t" << nt->rtt << std::endl;
+  }
+  latencyFile.close();
+
 }
