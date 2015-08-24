@@ -31,9 +31,7 @@ std::vector<ns3::ndn::NameTime*> rtts;
 void
 ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingEncrConsumer> consumer)
 {
-    for(std::vector<ns3::ndn::NameTime*>::iterator it = consumer->rtts.begin(); it != consumer->rtts.end(); ++it) {
-        rtts.push_back(*it);
-    }
+    rtts.push_back(consumer->rtts.back());
 }
 
 namespace ns3 {
