@@ -18,9 +18,9 @@
 using namespace std;
 using namespace std::chrono;
 
-#define LATENCY_OUTPUT_FILE_NAME "att-pint-generation-overhead-latency-Cr320-PINT"
-#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr320-PINT"
-#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr320-PINT"
+#define LATENCY_OUTPUT_FILE_NAME "att-pint-generation-overhead-latency-Cr320-PINT-CACHE"
+#define DELAY_OUTPUT_FILE_NAME "att-pint-generation-overhead-delay-Cr320-PINT-CACHE"
+#define RATE_OUTPUT_FILE_NAME "att-pint-generation-overhead-rate-Cr320-PINT-CACHE"
 #define SIMULATION_DURATION 1000.0
 
 #include "../apps/accounting-consumer.hpp"
