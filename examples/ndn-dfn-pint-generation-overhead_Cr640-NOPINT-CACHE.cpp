@@ -29,13 +29,13 @@ using namespace std::chrono;
 #define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr640-NOPINT-CACHE"
 #define SIMULATION_DURATION 1000.0
 
-#include "../apps/accounting-random-consumer.hpp"
+#include "../apps/accounting-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
 
 std::vector<ns3::ndn::NameTime*> rtts;
 
 void
-ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingRandomConsumer> consumer)
+ReceivedMeaningfulContent(ns3::Ptr<ns3::ndn::AccountingConsumer> consumer)
 {
     rtts.push_back(consumer->rtts.back());
 }
@@ -193,9 +193,9 @@ namespace ns3 {
     }
 
         // Consumers
-    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingRandomConsumer");
+    ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
     // Consumer will request /prefix/A/0, /prefix/A/1, ...
-    consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
+    consumerHelperHonest.SetAttribute("Frequency", StringValue("10")); // 10 interests a second
     consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
     consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
     for(int i=0; i < NUM_OF_CONSUMERS; i++) {
@@ -209,7 +209,7 @@ namespace ns3 {
     }
 
     // Producer
-    ndn::AppHelper producerHelper("ns3::ndn::AccountingRandomProducer");
+    ndn::AppHelper producerHelper("ns3::ndn::AccountingProducer");
     // Producer will reply to all requests starting with /prefix/A. For /prefix/B we expect NACK
     producerHelper.SetPrefix("/prefix/A");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));

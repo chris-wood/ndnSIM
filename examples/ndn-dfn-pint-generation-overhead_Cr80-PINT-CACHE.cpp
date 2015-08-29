@@ -24,10 +24,10 @@ int outRouters[OUT_ROUTERS_COUNT] = {0, 1, 2, 3, 5, 6, 8, 10, 11, 12, 17, 18, 20
 using namespace std;
 using namespace std::chrono;
 
-#define LATENCY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-latency-Cr80-PINT"
-#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr80-PINT"
-#define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr80-PINT"
-#define SIMULATION_DURATION 3000.0 // real-time?
+#define LATENCY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-latency-Cr80-PINT-CACHE"
+#define DELAY_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-delay-Cr80-PINT-CACHE"
+#define RATE_OUTPUT_FILE_NAME "dfn-pint-generation-overhead-rate-Cr80-PINT-CACHE"
+#define SIMULATION_DURATION 1000.0 // real-time?
 
 #include "../apps/accounting-consumer.hpp"
 #include "../apps/ndn-consumer-cbr.hpp"
@@ -197,7 +197,7 @@ namespace ns3 {
     // Consumer will request /prefix/A/0, /prefix/A/1, ...
     for(int i=0; i < NUM_OF_CONSUMERS; i++) {
       ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
-      consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
+      consumerHelperHonest.SetAttribute("Frequency", StringValue("10")); // 10 interests a second
       consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
       consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
       consumerHelperHonest.SetAttribute("MaxSeq", IntegerValue(10));
