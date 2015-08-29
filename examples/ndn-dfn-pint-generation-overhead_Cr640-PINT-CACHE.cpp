@@ -194,7 +194,7 @@ namespace ns3 {
     // Consumers
     ndn::AppHelper consumerHelperHonest("ns3::ndn::AccountingConsumer");
     // Consumer will request /prefix/A/0, /prefix/A/1, ...
-    consumerHelperHonest.SetAttribute("Frequency", StringValue("1")); // 10 interests a second
+    consumerHelperHonest.SetAttribute("Frequency", StringValue("10")); // 10 interests a second
     consumerHelperHonest.SetAttribute("Randomize", StringValue("uniform"));
     consumerHelperHonest.SetAttribute("StartSeq", IntegerValue(0));
     for(int i=0; i < NUM_OF_CONSUMERS; i++) {
