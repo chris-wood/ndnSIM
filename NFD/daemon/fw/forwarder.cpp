@@ -146,7 +146,6 @@ Forwarder::onIncomingInterest(Face& inFace, Interest& interest)
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> duration = end - start;
 
-      // std::cout << "cache hit? callback"<< std::endl;
       if (m_forwardingDelayCallback != 0) {
         m_forwardingDelayCallback(ns3::Simulator::Now(), duration.count());
       }
@@ -158,6 +157,8 @@ Forwarder::onIncomingInterest(Face& inFace, Interest& interest)
   if (m_usePint && cacheHit) { // mark as pInt, forward along mang
     interest.setIsPint(1);
   }
+
+  // std::cout << "forwarding " << interest.getName() << std::endl;
 
   // insert InRecord
   pitEntry->insertOrUpdateInRecord(inFace.shared_from_this(), interest);
