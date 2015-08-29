@@ -179,33 +179,28 @@ AccountingRandomConsumer::SendPacket()
   uint32_t seq = std::numeric_limits<uint32_t>::max(); // invalid
 
   // std::cout << Simulator::Now ().ToDouble (Time::S) << "s max -> " << m_seqMax << "\n";
-
   while (m_retxSeqs.size()) {
     seq = *m_retxSeqs.begin();
     m_retxSeqs.erase(m_retxSeqs.begin());
 
     NS_LOG_DEBUG("=interest seq " << seq << " from m_retxSeqs");
+
     break;
   }
 
   seq = 0;
 
-  // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << seq << "\n";
+  std::string prefix = m_interestName.toUri();
 
-  shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
-  nameWithSequence->appendSequenceNumber(seq);
-
-  // Append the random nonce TO THE NAME (different from the loop nonce)
-  // 2 for good measure... heh.
-  nameWithSequence->appendNumber(m_rand.GetValue());
-  nameWithSequence->appendNumber(m_rand.GetValue());
-
-  char randomString[32] = {0};
+  std::string suffix = "/";
   for(unsigned int i = 0; i < 32; ++i)
   {
-    randomString[i] = randomChar2();
+      char c = randomChar2();
+      suffix += c;
   }
-  nameWithSequence->append(randomString);
+  shared_ptr<Name> nameWithSequence = make_shared<Name>(prefix + suffix);
+
+  nameWithSequence->appendSequenceNumber(seq);
 
   // Now actually create the interest
   shared_ptr<Interest> interest = make_shared<Interest>();
@@ -213,12 +208,12 @@ AccountingRandomConsumer::SendPacket()
   interest->setName(*nameWithSequence);
 
   // Note: we're setting this randomly, just to test the encoding/decoding
-  std::vector<uint64_t> payload;
-  payload.push_back(seq);
-  payload.push_back(seq);
-  payload.push_back(seq);
-  payload.push_back(seq);
-  interest->setPayload(payload);
+  // std::vector<uint64_t> payload;
+  // payload.push_back(seq);
+  // payload.push_back(seq);
+  // payload.push_back(seq);
+  // payload.push_back(seq);
+  // interest->setPayload(payload);
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());

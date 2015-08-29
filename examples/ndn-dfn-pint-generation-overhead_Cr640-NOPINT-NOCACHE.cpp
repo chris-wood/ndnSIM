@@ -173,7 +173,7 @@ namespace ns3 {
 
     // Install NDN stack without cache
     ndn::StackHelper ndnHelperNoCache;
-    ndnHelperNoCache.SetDefaultRoutes(true);
+    // ndnHelperNoCache.SetDefaultRoutes(true);
     ndnHelperNoCache.SetOldContentStore("ns3::ndn::cs::Nocache"); // no cache
     // Install on consumers
     for (int i = 0; i < NUM_OF_CONSUMERS; i++) {
@@ -185,7 +185,7 @@ namespace ns3 {
 
     // Install NDN stack with cache
     ndn::StackHelper ndnHelperWithCache;
-    ndnHelperWithCache.SetDefaultRoutes(true);
+    // ndnHelperWithCache.SetDefaultRoutes(true);
     ndnHelperWithCache.SetOldContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "0");
     // Install on routers
     for (int i = NUM_OF_CONSUMERS; i < NUM_OF_CONSUMERS + NUM_OF_ROUTERS; i++) {
@@ -214,6 +214,14 @@ namespace ns3 {
     producerHelper.SetPrefix("/prefix/A");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
     producerHelper.Install(nodes.Get(producerId));
+
+    ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
+    ndnGlobalRoutingHelper.Install(nodes);
+
+    std::string prefix = "/prefix/A";
+    ndnGlobalRoutingHelper.AddOrigins(prefix, nodes.Get(producerId));
+
+    ndn::GlobalRoutingHelper::CalculateRoutes();
 
     // Traces
     ndn::L3RateTracer::InstallAll(RATE_OUTPUT_FILE_NAME, Seconds(1.0));

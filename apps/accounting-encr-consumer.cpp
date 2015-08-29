@@ -218,24 +218,23 @@ AccountingEncrConsumer::SendPacket()
     break;
   }
 
-  seq = m_seq++; // always be increasing
+  seq = m_seq++;
 
-  shared_ptr<Name> keyName = make_shared<Name>(m_interestName);
+  std::string prefix = m_interestName.toUri();
+
+  std::string suffix = "/";
+  for(unsigned int i = 0; i < 32; ++i)
+  {
+      char c = randomChar1();
+      suffix += c;
+  }
+
+  shared_ptr<Name> keyName = make_shared<Name>(prefix + suffix);
   keyName->append("key"); // add the key annotation
   keyName->appendSequenceNumber(seq);
   seq = m_seq++;
 
-  // the key has to be sufficiently unique to go all the way to the producer...
-  keyName->appendNumber(m_rand.GetValue());
-  keyName->appendNumber(m_rand.GetValue());
-  char randomString[32] = {0};
-  for(unsigned int i = 0; i < 32; ++i)
-  {
-    randomString[i] = randomChar1();
-  }
-  keyName->append(randomString);
-
-  shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
+  shared_ptr<Name> nameWithSequence = make_shared<Name>(prefix + suffix);
   nameWithSequence->appendSequenceNumber(seq);
 
   shared_ptr<Interest> interest = make_shared<Interest>();
